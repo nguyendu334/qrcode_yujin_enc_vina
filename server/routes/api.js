@@ -28,6 +28,7 @@ const {
   deleteUser,
 } = require("../controllers/userCtrl.js");
 const { getMonthlyReport } = require("../controllers/reportCtrl.js");
+const { getDashboardStats } = require("../controllers/dashboardCtrl.js");
 
 router.get("/machines", verifyToken, getMachines);
 router.post("/machines", verifyToken, addMachine);
@@ -67,5 +68,7 @@ router.delete(
 router.put("/inspections/:id/approval", verifyToken, approveInspection);
 
 router.get("/reports/monthly", getMonthlyReport)
+
+router.get("/dashboard/stats", getDashboardStats)
 
 module.exports = router;
