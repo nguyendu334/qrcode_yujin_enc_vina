@@ -27,6 +27,7 @@ const {
   updateUser,
   deleteUser,
 } = require("../controllers/userCtrl.js");
+const { getMonthlyReport } = require("../controllers/reportCtrl.js");
 
 router.get("/machines", verifyToken, getMachines);
 router.post("/machines", verifyToken, addMachine);
@@ -64,5 +65,7 @@ router.delete(
 );
 
 router.put("/inspections/:id/approval", verifyToken, approveInspection);
+
+router.get("/reports/monthly", getMonthlyReport)
 
 module.exports = router;
