@@ -9,6 +9,7 @@ import {
 import HeaderCard from "../../components/checksheet/HeaderCard";
 import ChecklistItem from "../../components/checksheet/ChecklistItem";
 import FooterSubmit from "../../components/checksheet/FooterSubmit";
+import api from "../../helper/api";
 
 function ChecksheetPage() {
   const location = useLocation();
@@ -18,6 +19,7 @@ function ChecksheetPage() {
   const [checklistItems, setChecklistItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isDuplicate, setIsDuplicate] = useState(false);
 
   // State form thông tin chung (Header)
   const [inspector, setInspector] = useState("");
@@ -28,21 +30,39 @@ function ChecksheetPage() {
   const [results, setResults] = useState({});
 
   useEffect(() => {
-    // 1. Đồng bộ thời gian thực tế hiển thị trên form (YYYY-MM-DD HH:mm:ss) hoặc định dạng Date tương thích
+    // 1. Đồng bộ thời gian thực tế hiển thị trên form
     const now = new Date();
-    const formattedTime = now.toISOString(); // Hoặc định dạng chuỗi tuỳ biến theo kiểu dữ liệu cột inspection_date của bạn
+    const formattedTime = now.toISOString();
     setCurrentTime(formattedTime);
 
     // 2. Bóc tách query param "?machine=..." từ link QR
     const searchParams = new URLSearchParams(location.search);
     const machineId = searchParams.get("machine");
 
+    // Hàm phụ trợ dùng để check trùng lặp (Lấy ngày YYYY-MM-DD từ biến now ở trên)
+    const verifyDuplicate = async (mId) => {
+      try {
+        const todayStr = now.toISOString().split("T")[0]; // Định dạng YYYY-MM-DD
+        const res = await api.get("/inspections/check-duplicate", {
+          params: { machine_id: mId, date: todayStr },
+        });
+
+        setIsDuplicate(res.data.isDuplicate);
+      } catch (err) {
+        console.error("Lỗi kiểm tra trùng lặp lịch checksheet:", err);
+      }
+    };
+
     if (machineId) {
+      // 🌟 GỌI CHECK TRÙNG SONG SONG HOẶC NGAY KHI CÓ MACHINE_ID
+      verifyDuplicate(machineId);
+
       // Gọi API Backend lấy thông tin máy và bộ checklist_item đi kèm
       getChecksheet(machineId)
         .then((res) => {
           setMachine(res.machine);
           setChecklistItems(res.checklistItems);
+
           // Khởi tạo trạng thái lưu trữ kèm phân loại item_type để gom payload chuẩn xác
           const initialResults = {};
           res.checklistItems.forEach((item) => {
@@ -83,6 +103,13 @@ function ChecksheetPage() {
   // Gửi toàn bộ dữ liệu kiểm tra lên Server (Lưu song song Header & Detail)
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // 🌟 BỔ SUNG 1: Chặn nộp phiếu nếu ngày hôm nay máy này đã được kiểm tra rồi
+    if (isDuplicate) {
+      toast.error("Thiết bị này đã được kiểm tra hôm nay. Không thể nộp thêm!");
+      return;
+    }
+
     if (!inspector.trim()) {
       toast.warning("Vui lòng nhập họ tên Người kiểm tra!");
       return;
@@ -97,13 +124,12 @@ function ChecksheetPage() {
     // ========================================================
     const formattedDetails = checklistItems.map((item) => {
       const userValue = results[item.item_id]?.value;
-      // Giả sử bạn có một state lưu remark riêng, hoặc nếu lưu chung cấu trúc thì lấy ra
       const remarkValue = results[item.item_id]?.remark || null;
 
       let resultField = null;
       let valueField = null;
 
-      if (item.item_type === "OKNG") {
+      if (item.item_type === "OKNG" || item.item_type === "OK_NG") {
         // Loại OKNG: Chỉ lưu vào cột result, cột value để null
         resultField = userValue || "OK";
         valueField = null;
@@ -117,7 +143,7 @@ function ChecksheetPage() {
         item_id: item.item_id,
         result: resultField,
         value: valueField,
-        remark: remarkValue, // Gửi thêm remark lên cho Backend nhận diện
+        remark: remarkValue,
       };
     });
 
@@ -128,14 +154,19 @@ function ChecksheetPage() {
       inspection_date: currentTime,
       shift: shift,
       check_results: formattedDetails,
-      // 🌟 LẤY TRỰC TIẾP ID NGƯỜI DUYỆT CÓ SẴN TỪ OBJECT MACHINE
-      approver_id: machine.approver_id, // 🌟 BỔ SUNG: Gửi kèm ID người duyệt lên Backend
+      approver_id: machine.approver_id,
     };
 
     try {
-      // Gọi API POST gửi gói tin lên xử lý transaction lưu đồng thời 2 bảng
-      sendInfoChecksheet(payload);
+      // 🌟 BỔ SUNG 2: Thêm "await" để đợi Backend xử lý xong và phản hồi
+      // (Hãy đảm bảo hàm sendInfoChecksheet của bạn có trả về một Promise của axios/fetch)
+      await sendInfoChecksheet(payload);
+
       toast.success("Đã lưu dữ liệu vào hệ thống Inspection thành công!");
+
+      // Sau khi nộp thành công, cập nhật ngay trạng thái trùng lặp để khóa nút luôn
+      setIsDuplicate(true);
+
       // ========================================================
       // LOGIC XÓA TRƯỜNG DỮ LIỆU VỪA NHẬP SAU KHI HOÀN THÀNH
       // ========================================================
@@ -153,6 +184,8 @@ function ChecksheetPage() {
       const now = new Date();
       setCurrentTime(now.toISOString());
     } catch (err) {
+      // Nếu API trả về lỗi (Ví dụ: Trùng lịch, lỗi DB...), code nhảy vào đây và KHÔNG reset form
+      console.error("Lỗi gửi dữ liệu checksheet:", err);
       toast.error(
         "Lỗi nộp phiếu: " + (err.response?.data?.error || err.message)
       );
@@ -232,7 +265,7 @@ function ChecksheetPage() {
       />
       {/* NÚT HOÀN THÀNH */}
       {checklistItems.length > 0 && (
-        <FooterSubmit handleSubmit={handleSubmit} />
+        <FooterSubmit handleSubmit={handleSubmit} isDuplicate={isDuplicate} />
       )}
     </div>
   );

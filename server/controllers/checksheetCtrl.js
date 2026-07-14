@@ -67,6 +67,28 @@ const getCheckSheet = async (req, res) => {
   }
 };
 
+const checkDuplicateChecksheet = async (req, res) => {
+  const { machine_id, date } = req.query;
+  if (!machine_id || !date) {
+    return res
+      .status(400)
+      .json({ error: "Thiếu machine_id hoặc date để kiểm tra!" });
+  }
+
+  try {
+    const checkDate = new Date(date).toISOString().split("T")[0];
+    const result = await pool.query(
+      `SELECT 1 FROM inspection_header WHERE machine_id = $1 AND DATE(inspection_date) = $2 LIMIT 1`,
+      [machine_id, checkDate]
+    );
+
+    // Trả về true nếu đã check, false nếu chưa check
+    res.json({ isDuplicate: result.rows.length > 0 });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // API Submit checksheet
 const sendInfoCheckSheet = async (req, res) => {
   const {
@@ -88,6 +110,27 @@ const sendInfoCheckSheet = async (req, res) => {
   const client = await pool.connect();
 
   try {
+    const checkDate = new Date(inspection_date).toISOString().split("T")[0];
+
+    const duplicateCheckQuery = `
+      SELECT inspection_id 
+      FROM inspection_header 
+      WHERE machine_id = $1 AND DATE(inspection_date) = $2
+      LIMIT 1;
+    `;
+    const duplicateResult = await client.query(duplicateCheckQuery, [
+      machine_id,
+      checkDate,
+    ]);
+
+    // Nếu đã tồn tại bản ghi trong ngày, chặn ngay lập tức và trả về lỗi
+    if (duplicateResult.rows.length > 0) {
+      client.release(); // Giải phóng luôn kết nối
+      return res.status(400).json({
+        error: `Thiết bị này đã được tạo phiếu kiểm tra vào ngày ${checkDate} rồi! Không thể kiểm tra thêm lần nữa.`,
+      });
+    }
+
     // Bắt đầu Transaction
     await client.query("BEGIN");
 
@@ -151,4 +194,8 @@ const sendInfoCheckSheet = async (req, res) => {
   }
 };
 
-module.exports = { getCheckSheet, sendInfoCheckSheet };
+module.exports = {
+  getCheckSheet,
+  checkDuplicateChecksheet,
+  sendInfoCheckSheet,
+};

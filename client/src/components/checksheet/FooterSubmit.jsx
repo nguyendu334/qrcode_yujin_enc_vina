@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { Button, Box } from "@mui/material";
 
-export default function FooterSubmit({ handleSubmit }) {
+export default function FooterSubmit({ handleSubmit, isDuplicate }) {
   return (
     <Box
       sx={{
@@ -12,6 +12,7 @@ export default function FooterSubmit({ handleSubmit }) {
     >
       <Button
         onClick={handleSubmit}
+        disabled={isDuplicate}
         sx={{
           padding: "12px 32px",
           backgroundColor: "#57b846",
