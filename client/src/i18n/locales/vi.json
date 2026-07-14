@@ -108,7 +108,9 @@
   "delete": "Xoá",
   "search": "Tìm kiếm .....",
   "password": "Mật khẩu",
+  "username": "Tên tài khoản",
   "logout": "Đăng xuất",
+  "login": "Đăng nhập",
   "save": "Lưu",
   "cancel": "Hủy",
   "exportQR": "Xuất QR"

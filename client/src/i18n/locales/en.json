@@ -108,6 +108,9 @@
   "delete": "Delete",
   "search": "Search .......",
   "logout": "Logout",
+  "password": "Password",
+  "username": "Username",
+  "login": "Login",
   "save": "Save",
   "cancel": "Cancel",
   "exportQR": "Export QR"

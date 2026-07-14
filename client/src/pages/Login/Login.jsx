@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { User, Lock } from "lucide-react";
 import { toast } from "react-toastify";
+
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { loginAPI } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
@@ -11,6 +13,8 @@ function Login() {
   const navigate = useNavigate();
 
   const { login } = useAuth();
+
+  const { i18n, t } = useTranslation();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -34,6 +38,10 @@ function Login() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const changeLanguage = (lang) => {
+    i18n.changeLanguage(lang);
   };
 
   return (
@@ -187,7 +195,7 @@ function Login() {
               </span>
               <input
                 type="text"
-                placeholder="Username / Email"
+                placeholder={t(`username`)}
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -221,7 +229,7 @@ function Login() {
               </span>
               <input
                 type="password"
-                placeholder="Password"
+                placeholder={t(`password`)}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -241,7 +249,7 @@ function Login() {
               />
             </div>
 
-            {/* NÚT LOGIN XANH LÁ CÂY ĐẬM ĐÀ */}
+            {/* NÚT LOGIN */}
             <button
               type="submit"
               style={{
@@ -267,58 +275,108 @@ function Login() {
                 (e.currentTarget.style.backgroundColor = "#5fcff5")
               }
             >
-              Login
+              {t(`login`)}
             </button>
           </form>
 
-          {/* QUÊN TÀI KHOẢN / MẬT KHẨU */}
-          {/* <div
+          <div
             style={{
-              textAlign: "center",
-              marginTop: "18px",
-              fontSize: "13px",
-              color: "#94a3b8",
-            }}
-          >
-            Forgot{" "}
-            <span
-              style={{
-                color: "#64748b",
-                cursor: "pointer",
-                textDecoration: "underline",
-              }}
-            >
-              Username
-            </span>{" "}
-            /{" "}
-            <span
-              style={{
-                color: "#64748b",
-                cursor: "pointer",
-                textDecoration: "underline",
-              }}
-            >
-              Password?
-            </span>
-          </div> */}
-
-          {/* CHÂN TRANG: TẠO TÀI KHOẢN MỚI */}
-          {/* <div
-            style={{
-              textAlign: "center",
-              marginTop: "50px",
-              fontSize: "13px",
-              color: "#64748b",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: "6px",
-              cursor: "pointer",
+              gap: "24px", // Khoảng cách giữa các nút
+              marginTop: "40px",
+              width: "100%",
             }}
           >
-            Create your Account
-            <ArrowRight size={14} />
-          </div> */}
+            {[
+              {
+                code: "ko",
+                label: "한국어",
+                flag: "https://flagcdn.com/w80/kr.png",
+              },
+              {
+                code: "en",
+                label: "English",
+                flag: "https://flagcdn.com/w80/gb.png",
+              },
+              {
+                code: "vi",
+                label: "Tiếng Việt",
+                flag: "https://flagcdn.com/w80/vn.png",
+              },
+            ].map((lang) => {
+              const isSelected = i18n.language === lang.code;
+
+              return (
+                <button
+                  key={lang.code}
+                  onClick={() => changeLanguage(lang.code)}
+                  style={{
+                    // Layout xếp dọc cờ và chữ
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+
+                    // Kích thước nút cân đối
+                    width: "80px",
+                    padding: "8px 4px",
+
+                    // Viền & màu nền thay đổi theo trạng thái Active
+                    backgroundColor: isSelected
+                      ? "rgba(59, 130, 246, 0.08)"
+                      : "transparent",
+                    border: isSelected
+                      ? "1.5px solid #3b82f6"
+                      : "1.5px solid transparent",
+                    borderRadius: "12px",
+
+                    // Trực quan & tương tác
+                    cursor: "pointer",
+                    transition: "all 0.2s ease-in-out",
+                    outline: "none",
+                  }}
+                  // Hiệu ứng hover nhẹ cho các nút chưa chọn
+                  onMouseEnter={(e) => {
+                    if (!isSelected)
+                      e.currentTarget.style.backgroundColor =
+                        "rgba(255, 255, 255, 0.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected)
+                      e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  {/* Hình ảnh lá cờ */}
+                  <img
+                    src={lang.flag}
+                    alt={lang.label}
+                    style={{
+                      width: "36px",
+                      height: "24px",
+                      objectFit: "cover",
+                      borderRadius: "4px", // Bo nhẹ góc lá cờ cho hiện đại
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+                    }}
+                  />
+
+                  {/* Chữ hiển thị tên ngôn ngữ */}
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: isSelected ? "600" : "400",
+                      color: isSelected ? "#3b82f6" : "#94a3b8", // Chữ sáng xanh khi chọn, xám khi chưa chọn
+                      transition: "color 0.2s ease",
+                    }}
+                  >
+                    {lang.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
