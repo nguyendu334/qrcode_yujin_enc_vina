@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
-import api from "../../helper/api";
+
+import { useTranslation } from "react-i18next";
+
+import { getDashboard } from "../../services/dashboardService";
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const [stats, setStats] = useState({
     totalMachines: 0,
     checkedMachines: 0,
@@ -15,10 +19,10 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const res = await api.get("/dashboard/stats"); // Thay bằng API thực tế
-        if (res.data.success) {
-          setStats(res.data.summary);
-          setAlerts(res.data.alerts);
+        const res = await getDashboard();
+        if (res.success) {
+          setStats(res.summary);
+          setAlerts(res.alerts);
         }
       } catch (error) {
         console.error("Lỗi lấy dữ liệu dashboard:", error);
@@ -60,12 +64,12 @@ const Dashboard = () => {
       >
         <div>
           <h2 style={{ margin: 0, color: "#1e293b" }}>
-            ⚙️ HỆ THỐNG GIÁM SÁT THIẾT BỊ YUJIN ENC
+            {t(`dashboard.title`)}
           </h2>
           <p
             style={{ margin: "5px 0 0 0", color: "#64748b", fontSize: "14px" }}
           >
-            Trạng thái vận hành và kiểm tra checksheet theo thời gian thực
+            {t(`dashboard.content`)}
           </p>
         </div>
         <div
@@ -79,7 +83,7 @@ const Dashboard = () => {
             color: "#475569",
           }}
         >
-          📅 Hôm nay: {new Date().toLocaleDateString("vi-VN")}
+          📅 {t(`dashboard.today`)}: {new Date().toLocaleDateString("vi-VN")}
         </div>
       </div>
 
@@ -105,7 +109,7 @@ const Dashboard = () => {
           <div
             style={{ fontSize: "13px", color: "#64748b", fontWeight: "600" }}
           >
-            TỔNG MÁY HỆ THỐNG
+            {t(`dashboard.allmachine`)}
           </div>
           <div
             style={{
@@ -116,7 +120,10 @@ const Dashboard = () => {
             }}
           >
             {stats.totalMachines}{" "}
-            <span style={{ fontSize: "13px", fontWeight: "normal" }}>máy</span>
+            <span style={{ fontSize: "13px", fontWeight: "normal" }}>
+              {" "}
+              {t(`dashboard.machine`)}
+            </span>
           </div>
         </div>
 
@@ -133,7 +140,7 @@ const Dashboard = () => {
           <div
             style={{ fontSize: "13px", color: "#64748b", fontWeight: "600" }}
           >
-            MÁY ĐANG HOẠT ĐỘNG
+            {t(`dashboard.online`)}
           </div>
           <div
             style={{
@@ -144,7 +151,9 @@ const Dashboard = () => {
             }}
           >
             {stats.activeMachines}{" "}
-            <span style={{ fontSize: "13px", fontWeight: "normal" }}>máy</span>
+            <span style={{ fontSize: "13px", fontWeight: "normal" }}>
+              {t(`dashboard.machine`)}
+            </span>
           </div>
         </div>
 
@@ -161,7 +170,7 @@ const Dashboard = () => {
           <div
             style={{ fontSize: "13px", color: "#64748b", fontWeight: "600" }}
           >
-            MÁY KHÔNG HOẠT ĐỘNG
+            {t(`dashboard.offline`)}
           </div>
           <div
             style={{
@@ -179,7 +188,7 @@ const Dashboard = () => {
                 color: "#94a3b8",
               }}
             >
-              máy
+              {t(`dashboard.machine`)}
             </span>
           </div>
         </div>
@@ -197,7 +206,7 @@ const Dashboard = () => {
           <div
             style={{ fontSize: "13px", color: "#64748b", fontWeight: "600" }}
           >
-            ĐÃ KIỂM TRA HÔM NAY
+            {t(`dashboard.checkedtoday`)}
           </div>
           <div
             style={{
@@ -224,7 +233,7 @@ const Dashboard = () => {
           <div
             style={{ fontSize: "13px", color: "#ef4444", fontWeight: "600" }}
           >
-            THIẾT BỊ PHÁT SINH LỖI (NG)
+            {t(`dashboard.ngdevice`)}
           </div>
           <div
             style={{
@@ -266,7 +275,7 @@ const Dashboard = () => {
             }}
           ></div>
           <h3 style={{ margin: 0, color: "#1e293b" }}>
-            ⚠️ DANH SÁCH HẠNG MỤC PHÁT SINH LỖI HÔM NAY
+            ⚠️ {t(`dashboard.listng`)}
           </h3>
         </div>
 
@@ -281,8 +290,7 @@ const Dashboard = () => {
               borderRadius: "6px",
             }}
           >
-            🎉 Tuyệt vời! Tất cả các thiết bị đã được kiểm tra đều đạt trạng
-            thái OK, không có lỗi phát sinh.
+            🎉 {t(`dashboard.excellent`)}
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>

@@ -105,6 +105,19 @@
     "Ngày": "주간",
     "Đêm": "야간"
   },
+  "dashboard": {
+    "title": "YUJIN ENC 설비 모니터링 시스템",
+    "content": "실시간 운전 상태 및 체크시트 점검",
+    "today": "오늘",
+    "allmachine": "시스템 총 설비 수",
+    "online": "가동 중인 설비",
+    "offline": "비가동 설비",
+    "checkedtoday": "오늘 점검 완료",
+    "ngdevice": "이상 발생 설비 (NG)",
+    "listng": "오늘 이상 발생 항목 리스트 (NG)",
+    "excellent": "훌륭합니다! 점검된 모든 설비가 정상(OK) 상태이며, 발생된 이상이 없습니다.",
+    "machine": "기계"
+  },
   "edit": "수정",
   "delete": "삭제",
   "password": "비밀번호",

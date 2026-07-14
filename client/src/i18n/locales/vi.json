@@ -104,6 +104,19 @@
     "Ngày": "Ca ngày",
     "Đêm": "Ca đêm"
   },
+  "dashboard": {
+    "title": "HỆ THỐNG GIÁM SÁT THIẾT BỊ YUJIN ENC",
+    "content": "Trạng thái vận hành và kiểm tra checksheet theo thời gian thực",
+    "today": "Hôm nay",
+    "allmachine": "TỔNG MÁY HỆ THỐNG",
+    "online": "MÁY ĐANG HOẠT ĐỘNG",
+    "offline": "MÁY KHÔNG HOẠT ĐỘNG",
+    "checkedtoday": "ĐÃ KIỂM TRA HÔM NAY",
+    "ngdevice": "THIẾT BỊ PHÁT SINH LỖI (NG)",
+    "listng": "DANH SÁCH HẠNG MỤC PHÁT SINH LỖI HÔM NAY",
+    "excellent": "Tuyệt vời! Tất cả các thiết bị đã được kiểm tra đều đạt trạng thái OK, không có lỗi phát sinh.",
+    "machine": "Máy"
+  },
   "edit": "Sửa",
   "delete": "Xoá",
   "search": "Tìm kiếm .....",

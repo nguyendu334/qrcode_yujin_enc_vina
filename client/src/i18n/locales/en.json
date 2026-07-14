@@ -104,6 +104,19 @@
     "Ngày": "Day",
     "Đêm": "Night"
   },
+  "dashboard": {
+    "title": "YUJIN ENC EQUIPMENT MONITORING SYSTEM",
+    "content": "Real-time operating status and checksheet inspection",
+    "today": "Today",
+    "allmachine": "TOTAL SYSTEM MACHINES",
+    "online": "OPERATING MACHINES",
+    "offline": "NON-OPERATING MACHINES",
+    "checkedtoday": "INSPECTED TODAY",
+    "ngdevice": "DEFECTIVE EQUIPMENT (NG)",
+    "listng": "TODAY'S DEFECTIVE ITEM LIST (NG)",
+    "excellent": "Excellent! All inspected equipment is in OK status, no defects found.",
+    "machine": "Machine"
+  },
   "edit": "Edit",
   "delete": "Delete",
   "search": "Search .......",
