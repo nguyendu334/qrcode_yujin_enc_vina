@@ -38,7 +38,7 @@ export default function AppRouter() {
           <Route
             path="/user"
             element={
-              <RoleRoute roles={["manager", "admin"]}>
+              <RoleRoute roles={["manager"]}>
                 <UserManagementPage />
               </RoleRoute>
             }

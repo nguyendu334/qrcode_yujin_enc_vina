@@ -117,6 +117,20 @@
     "excellent": "Excellent! All inspected equipment is in OK status, no defects found.",
     "machine": "Machine"
   },
+  "report": {
+    "title": "MONTHLY CHECKSHEET SUMMARY REPORT",
+    "selectmachine": "Select Equipment",
+    "month": "Select Month",
+    "viewreport": "View Report",
+    "exportexcel": "Export to Excel",
+    "exportpdf": "Export to PDF",
+    "approver": "Approved By",
+    "stt": "No.",
+    "category": "Inspection Item",
+    "standard": "Standard Specification",
+    "classify": "Classification",
+    "day": "Day of Month"
+  },
   "edit": "Edit",
   "delete": "Delete",
   "search": "Search .......",

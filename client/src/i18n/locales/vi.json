@@ -117,6 +117,20 @@
     "excellent": "Tuyệt vời! Tất cả các thiết bị đã được kiểm tra đều đạt trạng thái OK, không có lỗi phát sinh.",
     "machine": "Máy"
   },
+  "report": {
+    "title": "BÁO CÁO TỔNG HỢP CHECKSHEET THEO THÁNG",
+    "selectmachine": "Chọn thiết bị",
+    "month": "Chọn tháng",
+    "viewreport": "Xem báo cáo",
+    "exportexcel": "Xuất Excel",
+    "exportpdf": "Xuất PDF",
+    "approver": "Người phê duyệt",
+    "stt": "STT",
+    "category": "Hạng mục kiểm tra",
+    "standard": "Tiêu chuẩn",
+    "classify": "Phân loại",
+    "day": "Ngày trong tháng"
+  },
   "edit": "Sửa",
   "delete": "Xoá",
   "search": "Tìm kiếm .....",

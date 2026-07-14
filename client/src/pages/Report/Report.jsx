@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import XLSStyle from "xlsx-js-style";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { useTranslation } from "react-i18next";
 
 import api from "../../helper/api";
 
 const Report = () => {
+  const { t } = useTranslation();
+
   const [machines, setMachines] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("2026-07");
@@ -341,7 +344,7 @@ const Report = () => {
           paddingBottom: "10px",
         }}
       >
-        📊 BÁO CÁO TỔNG HỢP CHECKSHEET THEO THÁNG
+        {t(`report.title`)}
       </h2>
 
       {/* BỘ LỌC TÌM KIẾM */}
@@ -359,7 +362,7 @@ const Report = () => {
         {/* Các ô Select Machine và Input Month giữ nguyên như file trước của bạn */}
         <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
           <label style={{ fontWeight: "bold", color: "#475569" }}>
-            Chọn Thiết Bị:
+            {t(`report.selectmachine`)}
           </label>
           <select
             value={selectedMachine}
@@ -370,7 +373,7 @@ const Report = () => {
               border: "1px solid #cbd5e1",
             }}
           >
-            <option value="">-- Chọn máy --</option>
+            <option value="">-- {t(`report.selectmachine`)} --</option>
             {machines.map((m) => (
               <option key={m.machine_id} value={m.machine_id}>
                 {m.machine_code} - {m.machine_name}
@@ -380,7 +383,7 @@ const Report = () => {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
           <label style={{ fontWeight: "bold", color: "#475569" }}>
-            Chọn Tháng:
+            {t(`report.month`)}
           </label>
           <input
             type="month"
@@ -407,7 +410,7 @@ const Report = () => {
             fontWeight: "bold",
           }}
         >
-          {loading ? "Đang tải..." : "Xem Báo Cáo"}
+          {loading ? "Đang tải..." : t("report.viewreport")}
         </button>
 
         {/* 🌟 CÁC NÚT XUẤT FILE MỚI ĐƯỢC THÊM VÀO GIỮA THANH CÔNG CỤ */}
@@ -428,7 +431,7 @@ const Report = () => {
                 gap: "5px",
               }}
             >
-              📥 Xuất Excel
+              📥 {t(`report.exportexcel`)}
             </button>
 
             <button
@@ -446,7 +449,7 @@ const Report = () => {
                 gap: "5px",
               }}
             >
-              📄 Xuất PDF
+              📄 {t(`report.exportpdf`)}
             </button>
           </>
         )}
@@ -461,7 +464,7 @@ const Report = () => {
               fontSize: "13px",
             }}
           >
-            <strong>Người phê duyệt:</strong> {approvers.join(", ")}
+            <strong>{t(`report.approver`)}:</strong> {approvers.join(", ")}
           </div>
         )}
       </div>
@@ -489,19 +492,19 @@ const Report = () => {
           <thead>
             <tr style={{ backgroundColor: "#0f172a", color: "#ffffff" }}>
               <th rowSpan="2" style={{ padding: "10px" }}>
-                STT
+                {t(`report.stt`)}
               </th>
               <th rowSpan="2" style={{ minWidth: "180px" }}>
-                Hạng mục kiểm tra
+                {t(`report.category`)}
               </th>
               <th rowSpan="2" style={{ minWidth: "140px" }}>
-                Tiêu chuẩn
+                {t(`report.standard`)}
               </th>
               <th rowSpan="2" style={{ minWidth: "90px" }}>
-                Phân loại
+                {t(`report.classify`)}
               </th>
               <th colSpan={totalDays} style={{ padding: "8px" }}>
-                Ngày trong tháng
+                {t(`report.day`)}
               </th>
             </tr>
             <tr style={{ backgroundColor: "#334155", color: "#ffffff" }}>

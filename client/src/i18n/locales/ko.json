@@ -118,6 +118,20 @@
     "excellent": "훌륭합니다! 점검된 모든 설비가 정상(OK) 상태이며, 발생된 이상이 없습니다.",
     "machine": "기계"
   },
+  "report": {
+    "title": "월간 체크시트 종합 보고서",
+    "selectmachine": "설비 선택",
+    "month": "월 선택",
+    "viewreport": "보고서 보기",
+    "exportexcel": "Excel 내보내기",
+    "exportpdf": "PDF 내보내기",
+    "approver": "승인자",
+    "stt": "연번",
+    "category": "점검 항목",
+    "standard": "점검 기준",
+    "classify": "구분",
+    "day": "일자"
+  },
   "edit": "수정",
   "delete": "삭제",
   "password": "비밀번호",
