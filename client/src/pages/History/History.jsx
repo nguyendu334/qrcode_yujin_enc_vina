@@ -49,12 +49,16 @@ export default function InspectionHistory() {
   // 2. FETCH HEADERS DÙNG FILE HELPER
   const fetchHeaders = useCallback(async () => {
     try {
+      const token = localStorage.getItem("token");
       const response = await getInspectionHeader({
         params: {
           fromDate: filters.fromDate,
           toDate: filters.toDate,
           machineId: filters.machineId,
           shift: filters.shift,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
       });
 

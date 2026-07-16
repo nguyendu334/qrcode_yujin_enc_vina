@@ -14,7 +14,7 @@ import {
 import { Logout } from "@mui/icons-material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
-// import FactCheckIcon from "@mui/icons-material/FactCheck";
+import EngineeringIcon from '@mui/icons-material/Engineering';
 import HistoryIcon from "@mui/icons-material/History";
 import DescriptionIcon from "@mui/icons-material/Description";
 import GroupIcon from "@mui/icons-material/Group";
@@ -52,7 +52,7 @@ const menus = [
 
   {
     name: "sidebar.maintenance",
-    icon: <PrecisionManufacturingIcon />,
+    icon: <EngineeringIcon />,
     path: "/maintenance-management",
   },
 
