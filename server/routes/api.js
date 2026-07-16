@@ -30,6 +30,11 @@ const {
 } = require("../controllers/userCtrl.js");
 const { getMonthlyReport } = require("../controllers/reportCtrl.js");
 const { getDashboardStats } = require("../controllers/dashboardCtrl.js");
+const {
+  createTicket,
+  getTickets,
+  updateTicketStatus,
+} = require("../controllers/ticketCtrl.js");
 
 router.get("/machines", verifyToken, getMachines);
 router.post("/machines", verifyToken, addMachine);
@@ -72,5 +77,9 @@ router.put("/inspections/:id/approval", verifyToken, approveInspection);
 router.get("/reports/monthly", getMonthlyReport);
 
 router.get("/dashboard/stats", getDashboardStats);
+
+router.post("/tickets", createTicket);
+router.get("/tickets", verifyToken, getTickets);
+router.put("/tickets/:ticket_id", updateTicketStatus);
 
 module.exports = router;

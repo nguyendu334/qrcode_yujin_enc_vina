@@ -23,7 +23,7 @@ import { toast } from "react-toastify";
 export default function QRCodeCard({ machine }) {
   if (!machine) return null;
 
-  const qrUrl = `${window.location.origin}/checksheet?machine=${machine.machine_id}`;
+  const qrUrl = `${window.location.origin}/machine-menu?machine=${machine.machine_id}`;
 
   const copyLink = async () => {
     try {

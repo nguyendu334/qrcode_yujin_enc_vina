@@ -16,16 +16,17 @@ const getCheckSheet = async (req, res) => {
           m.machine_id,
           m.machine_code,
           m.machine_name,
+          line_no,
           m.machine_type_id,
           mt.machine_type_name,
-          ct.template_id,            -- Lấy thêm template_id trả về cho frontend nếu cần
+          ct.template_id,          
           ct.frequency,
-          u.full_name AS approver_name, -- Lấy chính xác tên đầy đủ của người duyệt cấu hình trong template
+          u.full_name AS approver_name,
           u.user_id as approver_id
         FROM machine m
         JOIN machine_type mt ON mt.machine_type_id = m.machine_type_id
         LEFT JOIN checklist_template ct ON ct.template_id = m.machine_type_id
-        LEFT JOIN users u ON ct.approver_id = u.user_id -- 👈 JOIN sang bảng users để lấy thông tin người duyệt
+        LEFT JOIN users u ON ct.approver_id = u.user_id
         WHERE m.machine_id = $1;
       `;
     const machineResult = await pool.query(machineQuery, [machine_id]);

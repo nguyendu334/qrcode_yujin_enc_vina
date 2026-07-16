@@ -6,7 +6,8 @@
     "history": "점검 이력",
     "report": "보고서",
     "user": "사용자",
-    "setting": "환경"
+    "setting": "환경",
+    "maintenance": "유지보수 관리"
   },
   "machineTable": {
     "code": "설비 코드",
@@ -131,6 +132,34 @@
     "standard": "점검 기준",
     "classify": "구분",
     "day": "일자"
+  },
+  "maintenance": {
+    "title": "설비 보전 관리",
+    "machinecode": "설비 코드",
+    "machinename": "설비명",
+    "reporter": "신고인",
+    "description": "문제 상세 내용",
+    "status": "상태",
+    "action": "작업",
+    "priority": "우선순위",
+    "low": "낮음",
+    "nomal": "보통",
+    "high": "긴급",
+    "close": "완료",
+    "pending": "대기중",
+    "processing": "조치중",
+    "handle": "조치",
+
+    "ticket_detail": "문제 상세 내용",
+    "device": "설비명",
+    "issue_description_label": "고장 내용",
+    "update_solution": "조치 방안 업데이트",
+    "assigned_to": "작업 담당자",
+    "assigned_to_placeholder": "담당자 이름...",
+    "solution_label": "조치 및 개선 결과",
+    "solution_placeholder": "조치 내용을 입력하세요...",
+    "btn_close_ticket": "조치 완료 (티켓 닫기)",
+    "btn_start_processing": "접수 및 조치 시작"
   },
   "edit": "수정",
   "delete": "삭제",

@@ -6,7 +6,8 @@
     "history": "Inspection History",
     "report": "Report",
     "user": "User",
-    "setting": "Setting"
+    "setting": "Setting",
+    "maintenance": "Maintenance Management"
   },
   "machineTable": {
     "code": "Machine Code",
@@ -130,6 +131,34 @@
     "standard": "Standard Specification",
     "classify": "Classification",
     "day": "Day of Month"
+  },
+  "maintenance": {
+    "title": "MAINTENANCE MANAGEMENT",
+    "machinecode": "Machine Code",
+    "machinename": "Machine Name",
+    "reporter": "Reporter",
+    "description": "Description of Issue",
+    "status": "Status",
+    "action": "Action",
+    "priority": "Priority",
+    "low": "Low",
+    "nomal": "Normal",
+    "high": "High", 
+    "close": "Close",
+    "pending": "Pending",
+    "processing": "Processing",
+    "handle": "Handle",
+
+    "ticket_detail": "Issue Details",
+    "device": "Device/Machine",
+    "issue_description_label": "Issue Description",
+    "update_solution": "Update Resolution Plan",
+    "assigned_to": "Assigned Technician",
+    "assigned_to_placeholder": "Technician's name...",
+    "solution_label": "Action / Corrective Action",
+    "solution_placeholder": "Enter resolution details...",
+    "btn_close_ticket": "Confirm Fixed (Close Ticket)",
+    "btn_start_processing": "Accept & Start Repair"
   },
   "edit": "Edit",
   "delete": "Delete",

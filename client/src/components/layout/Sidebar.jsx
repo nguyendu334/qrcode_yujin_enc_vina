@@ -50,11 +50,11 @@ const menus = [
     path: "/report",
   },
 
-  // {
-  //   name: "Checksheet",
-  //   icon: <PrecisionManufacturingIcon />,
-  //   path: "/checksheet",
-  // },
+  {
+    name: "sidebar.maintenance",
+    icon: <PrecisionManufacturingIcon />,
+    path: "/maintenance-management",
+  },
 
   {
     name: "sidebar.user",

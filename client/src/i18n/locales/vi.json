@@ -6,7 +6,8 @@
     "history": "Lịch sử kiểm tra",
     "report": "Báo cáo",
     "user": "Người dùng",
-    "setting": "Cài đặt"
+    "setting": "Cài đặt",
+    "maintenance": "Quản lý sự cố và bảo trì"
   },
   "machineTable": {
     "code": "Mã máy",
@@ -130,6 +131,34 @@
     "standard": "Tiêu chuẩn",
     "classify": "Phân loại",
     "day": "Ngày trong tháng"
+  },
+  "maintenance": {
+    "title": "QUẢN LÝ SỰ CỐ VÀ BẢO TRÌ THIẾT BỊ",
+    "machinecode": "Mã Máy",
+    "machinename": "Tên Máy",
+    "reporter": "Người Báo",
+    "description": "Mô tả sự cố",
+    "status": "Trạng thái",
+    "action": "Hành động",
+    "priority": "Mức độ",
+    "low": "Thấp",
+    "nomal": "Bình thường",
+    "high": "Cao",
+    "close": "Đã xử lý",
+    "pending": "Đang chờ xử lý",
+    "processing": "Đang xử lý",
+    "handle": "Xử lý",
+
+    "ticket_detail": "Chi Tiết Sự Cố",
+    "device": "Thiết bị",
+    "issue_description_label": "Nội dung sự cố",
+    "update_solution": "Cập nhật phương án xử lý",
+    "assigned_to": "Người thực hiện sửa chữa",
+    "assigned_to_placeholder": "Tên người sửa chữa...",
+    "solution_label": "Biện pháp / Kết quả khắc phục",
+    "solution_placeholder": "Nhập cách xử lý lỗi...",
+    "btn_close_ticket": "Xác Nhận Sửa Xong (Đóng Ticket)",
+    "btn_start_processing": "Tiếp Nhận & Bắt Đầu Sửa"
   },
   "edit": "Sửa",
   "delete": "Xoá",

@@ -12,18 +12,22 @@ import ProtectedRoute from "./ProtectedRoute";
 import RoleRoute from "./RoleRoute";
 import UserManagementPage from "../pages/User/UserPage";
 import Setting from "../pages/Setting/SettingPage";
-
+import MachineMenu from "../pages/MachineMenu/MachineMenu";
+import CreateTicket from "../pages/Ticket/CreateTicket";
+import MaintenanceManagement from "../pages/Ticket/MaintenanceManagement";
 
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/machine-menu" element={<MachineMenu />} />
         <Route path="/checksheet" element={<Checksheet />} />
+        <Route path="/create-ticket" element={<CreateTicket />} />
         <Route
           element={
             <ProtectedRoute>
-              <AppLayout/>
+              <AppLayout />
             </ProtectedRoute>
           }
         >
@@ -34,6 +38,7 @@ export default function AppRouter() {
           <Route path="/history" element={<History />} />
 
           <Route path="/report" element={<Report />} />
+          <Route path="//maintenance-management" element={<MaintenanceManagement />} />
           <Route path="/setting" element={<Setting />} />
           <Route
             path="/user"
