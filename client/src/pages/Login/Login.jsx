@@ -1,7 +1,23 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
-import { User, Lock } from "lucide-react";
 import { toast } from "react-toastify";
+
+import {
+  Box,
+  Typography,
+  Card,
+  Button,
+  IconButton,
+  Divider,
+  Fade,
+  InputBase,
+} from "@mui/material";
+import {
+  Person as UserIcon,
+  LockOutlined as LockIcon,
+  Visibility,
+  VisibilityOff,
+} from "@mui/icons-material";
 
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -44,342 +60,373 @@ function Login() {
     i18n.changeLanguage(lang);
   };
 
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
+
   return (
-    <div
-      style={{
+    <Box
+      sx={{
         width: "100vw",
         height: "100vh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        // Màu nền Gradient
+        // 1. Màu nền Gradient rực rỡ chính xác như ảnh gốc bạn gửi
         background:
-          "linear-gradient(135deg, #0268f7 0%, #458db1 30%, #bb4ac4 70%, #e9532e 100%)",
-        fontFamily: '"Poppins", "Segoe UI", sans-serif',
+          "linear-gradient(135deg, #005eff 0%, #9e1beb 35%, #f12d80 70%, #f15238 100%)",
+        fontFamily: '"Plus Jakarta Sans", "Poppins", "Segoe UI", sans-serif',
         margin: 0,
-        padding: 0,
+        padding: "20px",
         boxSizing: "border-box",
+        overflow: "hidden",
       }}
     >
-      {/* KHUNG TRẮNG TRUNG TÂM */}
-      <div
-        style={{
-          display: "flex",
-          width: "850px",
-          backgroundColor: "#ffffff",
-          borderRadius: "20px",
-          boxShadow: "0 15px 35px rgba(0, 0, 0, 0.2)",
-          overflow: "hidden",
-          minHeight: "480px",
-        }}
-      >
-        {/* BÊN TRÁI: HÌNH ẢNH MINH HỌA (MÁY TÍNH VÀ CÁC CHI TIẾT TRANG TRÍ) */}
-        <div
-          style={{
-            flex: 1,
-            backgroundColor: "#f8fafc",
+      <Fade in={true} timeout={800}>
+        <Card
+          elevation={12}
+          sx={{
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            position: "relative",
-            padding: "40px",
+            width: "880px",
+            maxWidth: "100%",
+            backgroundColor: "#ffffff",
+            borderRadius: "20px",
+            overflow: "hidden",
+            minHeight: "460px",
+            boxShadow: "0 15px 35px rgba(0, 0, 0, 0.2)",
           }}
         >
-          {/* Các họa tiết hình học nhỏ xung quanh giống ảnh */}
-          <div
-            style={{
-              position: "absolute",
-              top: "25%",
-              left: "20%",
-              width: "12px",
-              height: "12px",
-              borderRadius: "50%",
-              border: "3px solid #38bdf8",
-            }}
-          ></div>
-          <div
-            style={{
-              position: "absolute",
-              bottom: "25%",
-              right: "20%",
-              width: "10px",
-              height: "10px",
-              borderRadius: "50%",
-              border: "3px solid #38bdf8",
-            }}
-          ></div>
-          <div
-            style={{
-              position: "absolute",
-              top: "20%",
-              right: "25%",
-              width: "10px",
-              height: "10px",
-              border: "2px solid #cbd5e1",
-              transform: "rotate(45deg)",
-            }}
-          ></div>
-          <div
-            style={{
-              position: "absolute",
-              bottom: "25%",
-              left: "15%",
-              width: "0",
-              height: "0",
-              borderLeft: "8px solid transparent",
-              borderRight: "8px solid transparent",
-              borderBottom: "14px solid #4ade80",
-              transform: "rotate(-15deg)",
-            }}
-          ></div>
-
-          {/* Vòng tròn nền và Icon trung tâm */}
-          <div
-            style={{
-              width: "220px",
-              height: "220px",
-              borderRadius: "50%",
-              backgroundColor: "#ccebf5",
-              display: "flex",
+          {/* BÊN TRÁI: KHU VỰC THƯƠNG HIỆU (Chỉ chứa logo có vòng tròn xanh và hình trang trí) */}
+          <Box
+            sx={{
+              flex: 1,
+              background: "#f4f7f6",
+              display: { xs: "none", md: "flex" },
               alignItems: "center",
               justifyContent: "center",
+              position: "relative",
+              overflow: "hidden",
             }}
           >
-            <img
-              src="../yujin_logo.png"
-              alt=""
-              style={{ maxWidth: "200px", height: "auto" }}
-            />
-          </div>
-        </div>
-
-        {/* BÊN PHẢI: FORM ĐĂNG NHẬP CHÍNH */}
-        <div
-          style={{
-            flex: 1,
-            padding: "50px",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            position: "relative",
-          }}
-        >
-          <h2
-            style={{
-              margin: "0 0 30px 0",
-              fontSize: "28px",
-              fontWeight: "700",
-              color: "#1e293b",
-              textAlign: "center",
-              letterSpacing: "0.5px",
-            }}
-          >
-            YUJIN ENC VINA
-          </h2>
-
-          <form
-            onSubmit={handleLogin}
-            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-          >
-            {/* Ô NHẬP TÀI KHOẢN (EMAIL) */}
-            <div style={{ position: "relative" }}>
-              <span
-                style={{
-                  position: "absolute",
-                  left: "18px",
-                  top: "14px",
-                  color: "#64748b",
-                }}
-              >
-                <User size={18} />
-              </span>
-              <input
-                type="text"
-                placeholder={t(`username`)}
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "14px 16px 14px 50px",
-                  borderRadius: "30px", // Bo tròn hình viên thuốc bo cong hoàn toàn
-                  border: "none",
-                  backgroundColor: "#e2e8f0", // Màu xám nhạt như hình mẫu
-                  fontSize: "14px",
-                  color: "#334155",
-                  outline: "none",
-                  boxSizing: "border-box",
-                  fontWeight: "500",
-                  transition: "all 0.2s",
-                }}
-              />
-            </div>
-
-            {/* Ô NHẬP MẬT KHẨU */}
-            <div style={{ position: "relative" }}>
-              <span
-                style={{
-                  position: "absolute",
-                  left: "18px",
-                  top: "14px",
-                  color: "#64748b",
-                }}
-              >
-                <Lock size={18} />
-              </span>
-              <input
-                type="password"
-                placeholder={t(`password`)}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "14px 16px 14px 50px",
-                  borderRadius: "30px",
-                  border: "none",
-                  backgroundColor: "#e2e8f0",
-                  fontSize: "14px",
-                  color: "#334155",
-                  outline: "none",
-                  boxSizing: "border-box",
-                  fontWeight: "500",
-                  transition: "all 0.2s",
-                }}
-              />
-            </div>
-
-            {/* NÚT LOGIN */}
-            <button
-              type="submit"
-              style={{
-                width: "100%",
-                padding: "14px",
-                borderRadius: "30px",
-                border: "none",
-                backgroundColor: "#5fcff5", // Đúng tông màu xanh lá mượt mà trong ảnh mẫu
-                color: "#ffffff",
-                fontSize: "15px",
-                fontWeight: "700",
-                textTransform: "uppercase",
-                letterSpacing: "1px",
-                cursor: "pointer",
-                marginTop: "10px",
-                boxShadow: "0 4px 12px rgba(87, 184, 70, 0.3)",
-                transition: "all 0.2s",
+          
+            <Box
+              sx={{
+                width: "200px",
+                height: "200px",
+                borderRadius: "50%",
+                background:
+                  "radial-gradient(circle, #c9f0fc 0%, #e8f9fd 60%, rgba(255,255,255,0) 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                zIndex: 1,
               }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#00e1ff")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "#5fcff5")
-              }
             >
-              {t(`login`)}
-            </button>
-          </form>
+              <Box
+                component="img"
+                src="../yujin_logo.png"
+                alt="Logo"
+                sx={{
+                  maxWidth: "115px",
+                  height: "auto",
+                  zIndex: 2,
+                }}
+              />
+            </Box>
 
-          <div
-            style={{
+            <Box
+              sx={{
+                position: "absolute",
+                top: "30%",
+                right: "25%",
+                width: "8px",
+                height: "8px",
+                border: "2px solid #56ccf2",
+                transform: "rotate(45deg)",
+                opacity: 0.7,
+              }}
+            />
+            {/* Hình tròn xanh dương phía dưới bên phải */}
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: "35%",
+                right: "22%",
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                backgroundColor: "#56ccf2",
+                opacity: 0.8,
+              }}
+            />
+            {/* Hình tròn xanh dương nhỏ phía trên bên trái */}
+            <Box
+              sx={{
+                position: "absolute",
+                top: "35%",
+                left: "22%",
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                backgroundColor: "#56ccf2",
+                opacity: 0.8,
+              }}
+            />
+            {/* Tam giác xanh lá phía dưới bên trái */}
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: "33%",
+                left: "18%",
+                width: 0,
+                height: 0,
+                borderLeft: "5px solid transparent",
+                borderRight: "5px solid transparent",
+                borderBottom: "10px solid #2ecc71",
+                transform: "rotate(-15deg)",
+                opacity: 0.8,
+              }}
+            />
+          </Box>
+
+          {/* BÊN PHẢI: FORM ĐĂNG NHẬP */}
+          <Box
+            sx={{
+              flex: 1.1,
+              padding: { xs: "30px 20px", sm: "45px 50px" },
               display: "flex",
-              alignItems: "center",
+              flexDirection: "column",
               justifyContent: "center",
-              gap: "24px", // Khoảng cách giữa các nút
-              marginTop: "40px",
-              width: "100%",
+              backgroundColor: "#ffffff",
             }}
           >
-            {[
-              {
-                code: "ko",
-                label: "한국어",
-                flag: "https://flagcdn.com/w80/kr.png",
-              },
-              {
-                code: "en",
-                label: "English",
-                flag: "https://flagcdn.com/w80/gb.png",
-              },
-              {
-                code: "vi",
-                label: "Tiếng Việt",
-                flag: "https://flagcdn.com/w80/vn.png",
-              },
-            ].map((lang) => {
-              const isSelected = i18n.language === lang.code;
+            {/* Chữ thương hiệu nằm bên phải, ngay trên form đăng nhập */}
+            <Typography
+              variant="h5"
+              sx={{
+                fontSize: "22px",
+                fontWeight: "800",
+                color: "#1a2c42",
+                textAlign: "center",
+                mb: "24px",
+                letterSpacing: "1px",
+              }}
+            >
+              YUJIN ENC VINA
+            </Typography>
 
-              return (
-                <button
-                  key={lang.code}
-                  onClick={() => changeLanguage(lang.code)}
-                  style={{
-                    // Layout xếp dọc cờ và chữ
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "8px",
-
-                    // Kích thước nút cân đối
-                    width: "80px",
-                    padding: "8px 4px",
-
-                    // Viền & màu nền thay đổi theo trạng thái Active
-                    backgroundColor: isSelected
-                      ? "rgba(59, 130, 246, 0.08)"
-                      : "transparent",
-                    border: isSelected
-                      ? "1.5px solid #3b82f6"
-                      : "1.5px solid transparent",
-                    borderRadius: "12px",
-
-                    // Trực quan & tương tác
-                    cursor: "pointer",
-                    transition: "all 0.2s ease-in-out",
-                    outline: "none",
+            <Box
+              component="form"
+              onSubmit={handleLogin}
+              sx={{ display: "flex", flexDirection: "column", gap: "16px" }}
+            >
+              {/* Ô NHẬP TÀI KHOẢN (Màu xám/xanh nhạt không viền, bo tròn dạng kẹo) */}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  borderRadius: "30px", // Bo tròn pill-shape tuyệt đối
+                  backgroundColor: "#e8eff9", // Màu xám xanh chuẩn ảnh gốc
+                  padding: "8px 18px",
+                  gap: "10px",
+                  border: "1px solid transparent",
+                  transition: "all 0.2s ease-in-out",
+                  "&:focus-within": {
+                    backgroundColor: "#ffffff",
+                    borderColor: "#56ccf2",
+                    boxShadow: "0 0 8px rgba(86, 204, 242, 0.25)",
+                  },
+                }}
+              >
+                {/* Luôn hiển thị Icon */}
+                <UserIcon sx={{ color: "#8fa0b5", fontSize: "22px" }} />
+                <InputBase
+                  placeholder={t(`username`)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  fullWidth
+                  sx={{
+                    fontSize: "18px",
+                    color: "#334155",
+                    fontWeight: "500",
+                    "& input::placeholder": {
+                      color: "#8fa0b5",
+                      opacity: 1,
+                    },
                   }}
-                  // Hiệu ứng hover nhẹ cho các nút chưa chọn
-                  onMouseEnter={(e) => {
-                    if (!isSelected)
-                      e.currentTarget.style.backgroundColor =
-                        "rgba(255, 255, 255, 0.05)";
+                />
+              </Box>
+
+              {/* Ô NHẬP MẬT KHẨU (Màu xám/xanh nhạt không viền, bo tròn dạng kẹo) */}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  borderRadius: "30px",
+                  backgroundColor: "#e8eff9",
+                  padding: "8px 18px",
+                  gap: "10px",
+                  border: "1px solid transparent",
+                  transition: "all 0.2s ease-in-out",
+                  "&:focus-within": {
+                    backgroundColor: "#ffffff",
+                    borderColor: "#56ccf2",
+                    boxShadow: "0 0 8px rgba(86, 204, 242, 0.25)",
+                  },
+                }}
+              >
+                <LockIcon sx={{ color: "#8fa0b5", fontSize: "22px" }} />
+                <InputBase
+                  type={showPassword ? "text" : "password"}
+                  placeholder={t(`password`)}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  fullWidth
+                  sx={{
+                    fontSize: "18px",
+                    color: "#334155",
+                    fontWeight: "500",
+                    "& input::placeholder": {
+                      color: "#8fa0b5",
+                      opacity: 1,
+                    },
                   }}
-                  onMouseLeave={(e) => {
-                    if (!isSelected)
-                      e.currentTarget.style.backgroundColor = "transparent";
-                  }}
+                />
+                <IconButton
+                  onClick={handleClickShowPassword}
+                  edge="end"
+                  size="small"
+                  sx={{ color: "#8fa0b5" }}
                 >
-                  {/* Hình ảnh lá cờ */}
-                  <img
-                    src={lang.flag}
-                    alt={lang.label}
-                    style={{
-                      width: "36px",
-                      height: "24px",
-                      objectFit: "cover",
-                      borderRadius: "4px", // Bo nhẹ góc lá cờ cho hiện đại
-                      boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
-                    }}
-                  />
+                  {showPassword ? (
+                    <VisibilityOff sx={{ fontSize: "18px" }} />
+                  ) : (
+                    <Visibility sx={{ fontSize: "18px" }} />
+                  )}
+                </IconButton>
+              </Box>
 
-                  {/* Chữ hiển thị tên ngôn ngữ */}
-                  <span
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: isSelected ? "600" : "400",
-                      color: isSelected ? "#3b82f6" : "#94a3b8", // Chữ sáng xanh khi chọn, xám khi chưa chọn
-                      transition: "color 0.2s ease",
+              {/* NÚT ĐĂNG NHẬP (Xanh cyan sáng, bo tròn pill-shape như thiết kế gốc) */}
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                sx={{
+                  width: "50%",
+                  margin: "0 auto",
+                  padding: "24px 0",
+                  borderRadius: "30px",
+                  backgroundColor: "#50cbf5",
+                  boxShadow: "0 4px 14px rgba(80, 203, 245, 0.3)",
+                  color: "#ffffff",
+                  fontSize: "13px",
+                  fontWeight: "700",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
+                  marginTop: "10px",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    backgroundColor: "#3eb7e0",
+                    boxShadow: "0 6px 20px rgba(80, 203, 245, 0.4)",
+                    transform: "translateY(-1px)",
+                  },
+                  "&:active": {
+                    transform: "translateY(1px)",
+                  },
+                }}
+              >
+                {t(`login`)}
+              </Button>
+            </Box>
+
+            <Divider sx={{ mt: "40px", borderColor: "#f0f0f0" }} />
+
+            {/* KHU VỰC CHỌN NGÔN NGỮ (Sắp xếp nằm ngang gọn gàng phía dưới cùng) */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "42px",
+                marginTop: "32px",
+              }}
+            >
+              {[
+                {
+                  code: "ko",
+                  label: "한국어",
+                  flag: "https://flagcdn.com/w40/kr.png",
+                },
+                {
+                  code: "en",
+                  label: "English",
+                  flag: "https://flagcdn.com/w40/gb.png",
+                },
+                {
+                  code: "vi",
+                  label: "Tiếng Việt",
+                  flag: "https://flagcdn.com/w40/vn.png",
+                },
+              ].map((lang) => {
+                const isSelected = i18n.language === lang.code;
+
+                return (
+                  <Button
+                    key={lang.code}
+                    onClick={() => changeLanguage(lang.code)}
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "4px",
+                      padding: "24px 18px",
+                      borderRadius: "12px",
+                      backgroundColor: "transparent",
+                      border: isSelected
+                        ? "1.5px solid #2f80ed"
+                        : "1.5px solid transparent",
+                      textTransform: "none",
+                      minWidth: "75px",
+                      transition: "all 0.2s ease",
+                      "&:hover": {
+                        backgroundColor: "#f1f5f9",
+                      },
                     }}
                   >
-                    {lang.label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </div>
+                    {/* Ảnh cờ tổ quốc */}
+                    <Box
+                      component="img"
+                      src={lang.flag}
+                      alt={lang.label}
+                      sx={{
+                        width: "32px",
+                        borderRadius: "2px",
+                        objectFit: "cover",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+                      }}
+                    />
+                    {/* Tên ngôn ngữ phía dưới */}
+                    <Typography
+                      sx={{
+                        fontSize: "13px",
+                        fontWeight: isSelected ? "700" : "500",
+                        color: isSelected ? "#2f80ed" : "#64748b",
+                        lineHeight: 1,
+                      }}
+                    >
+                      {lang.label}
+                    </Typography>
+                  </Button>
+                );
+              })}
+            </Box>
+          </Box>
+        </Card>
+      </Fade>
+    </Box>
   );
 }
 export default Login;
