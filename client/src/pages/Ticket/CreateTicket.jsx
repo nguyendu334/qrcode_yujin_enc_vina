@@ -1,12 +1,27 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  MenuItem,
+  Button,
+  CircularProgress,
+} from "@mui/material";
+import {
+  ReportProblem as WarningIcon,
+  Send as SendIcon,
+} from "@mui/icons-material";
+
 import api from "../../helper/api";
 import { getChecksheet } from "../../services/checksheetService";
 
 const CreateTicket = () => {
   const location = useLocation();
-//   const navigate = useNavigate();
+  //   const navigate = useNavigate();
 
   const [machine, setMachine] = useState(null);
   const [reporterName, setReporterName] = useState("");
@@ -94,180 +109,194 @@ const CreateTicket = () => {
     );
 
   return (
-    <div
-      style={{
-        maxWidth: "500px",
+    <Card
+      elevation={3}
+      sx={{
+        maxWidth: 500,
         margin: "20px auto",
-        padding: "20px",
-        backgroundColor: "#fff",
-        borderRadius: "12px",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+        borderRadius: 3,
+        overflow: "hidden",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+        backgroundColor: "#ffffff",
       }}
     >
-      <h2
-        style={{
-          textAlign: "center",
-          color: "#b91c1c",
-          marginBottom: "5px",
-          fontSize: "20px",
-        }}
-      >
-        ⚠️ BÁO CÁO SỰ CỐ THIẾT BỊ
-      </h2>
-      <p
-        style={{
-          textAlign: "center",
-          color: "#64748b",
-          fontSize: "14px",
-          marginBottom: "25px",
-        }}
-      >
-        Gửi yêu cầu sửa chữa
-      </p>
-
-      {machine && (
-        <div
-          style={{
-            backgroundColor: "#f8fafc",
-            padding: "12px",
-            borderRadius: "8px",
-            borderLeft: "4px solid #ef4444",
-            marginBottom: "20px",
+      <CardContent sx={{ p: 4 }}>
+        {/* TIÊU ĐỀ TRANG BÁO CÁO */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            mb: 3,
           }}
         >
-          <div style={{ fontSize: "12px", color: "#64748b" }}>
-            THIẾT BỊ PHÁT SINH SỰ CỐ:
-          </div>
-          <div
-            style={{
-              fontWeight: "bold",
-              fontSize: "16px",
-              color: "#1e293b",
-              marginTop: "3px",
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              color: "#d32f2f",
             }}
           >
-            {machine.machine_code} - {machine.machine_name}
-          </div>
-          <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>
-            Khu vực: {machine.line_no}
-          </div>
-        </div>
-      )}
+            <WarningIcon sx={{ fontSize: 24 }} />
+            <Typography
+              variant="h6"
+              component="h2"
+              sx={{ fontWeight: "bold", letterSpacing: "0.5px" }}
+            >
+              BÁO CÁO SỰ CỐ THIẾT BỊ
+            </Typography>
+          </Box>
+          <Typography variant="body2" sx={{ color: "#64748b", mt: 0.5 }}>
+            Gửi yêu cầu sửa chữa đến bộ phận kỹ thuật
+          </Typography>
+        </Box>
 
-      <form onSubmit={handleSubmit}>
-        {/* Người báo cáo */}
-        <div style={{ marginBottom: "15px" }}>
-          <label
-            style={{
-              display: "block",
-              fontSize: "14px",
-              fontWeight: "bold",
-              color: "#475569",
-              marginBottom: "5px",
+        {/* THÔNG TIN THIẾT BỊ ĐANG BỊ LỖI */}
+        {machine && (
+          <Box
+            sx={{
+              backgroundColor: "#f8fafc",
+              padding: 2,
+              borderRadius: 2,
+              borderLeft: "4px solid #ef4444",
+              marginBottom: 3,
             }}
           >
-            Người phát hiện sự cố *
-          </label>
-          <input
-            type="text"
+            <Typography
+              variant="caption"
+              sx={{
+                fontWeight: "bold",
+                color: "#64748b",
+                letterSpacing: "0.5px",
+              }}
+            >
+              THIẾT BỊ PHÁT SINH SỰ CỐ:
+            </Typography>
+            <Typography
+              variant="subtitle1"
+              sx={{
+                fontWeight: "bold",
+                color: "#1e293b",
+                mt: 0.5,
+              }}
+            >
+              {machine.machine_code} - {machine.machine_name}
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#64748b", mt: 0.5 }}>
+              Line: {machine.line_no}
+            </Typography>
+          </Box>
+        )}
+
+        {/* FORM NHẬP LIỆU */}
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          noValidate
+          sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}
+        >
+          {/* Ô nhập: Người báo cáo */}
+          <TextField
+            label="Người phát hiện sự cố"
+            required
+            fullWidth
+            variant="outlined"
             placeholder="Nhập tên của bạn..."
             value={reporterName}
             onChange={(e) => setReporterName(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "10px",
-              borderRadius: "6px",
-              border: "1px solid #cbd5e1",
-              outline: "none",
-              fontSize: "14px",
+            InputLabelProps={{ shrink: true }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+              },
             }}
           />
-        </div>
 
-        {/* Mức độ ưu tiên */}
-        <div style={{ marginBottom: "15px" }}>
-          <label
-            style={{
-              display: "block",
-              fontSize: "14px",
-              fontWeight: "bold",
-              color: "#475569",
-              marginBottom: "5px",
-            }}
-          >
-            Mức độ khẩn cấp của lỗi
-          </label>
-          <select
+          {/* Ô chọn: Mức độ khẩn cấp */}
+          <TextField
+            select
+            label="Mức độ khẩn cấp của lỗi"
+            fullWidth
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "10px",
-              borderRadius: "6px",
-              border: "1px solid #cbd5e1",
-              outline: "none",
-              fontSize: "14px",
-              backgroundColor: "#fff",
+            InputLabelProps={{ shrink: true }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+              },
             }}
           >
-            <option value="LOW">Thấp (Có thể sửa sau)</option>
-            <option value="NORMAL">Bình thường (Sửa trong ca)</option>
-            <option value="HIGH">Khẩn cấp (Dừng máy, cần sửa ngay!)</option>
-          </select>
-        </div>
+            <MenuItem value="LOW">Thấp (Có thể sửa sau)</MenuItem>
+            <MenuItem value="NORMAL">Bình thường (Sửa trong ca)</MenuItem>
+            <MenuItem value="HIGH">
+              <Box
+                sx={{
+                  color: "#d32f2f",
+                  fontWeight: "bold",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                Khẩn cấp (Dừng máy, cần sửa ngay!)
+              </Box>
+            </MenuItem>
+          </TextField>
 
-        {/* Mô tả chi tiết lỗi */}
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            style={{
-              display: "block",
-              fontSize: "14px",
-              fontWeight: "bold",
-              color: "#475569",
-              marginBottom: "5px",
-            }}
-          >
-            Mô tả hiện tượng sự cố *
-          </label>
-          <textarea
-            rows="4"
+          {/* Ô nhập: Mô tả chi tiết lỗi */}
+          <TextField
+            label="Mô tả hiện tượng sự cố"
+            required
+            fullWidth
+            multiline
+            rows={4}
             placeholder="Ví dụ: Máy phát ra tiếng kêu lạ, băng tải bị kẹt không quay được, màn hình điều khiển không lên nguồn..."
             value={issueDescription}
             onChange={(e) => setIssueDescription(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "10px",
-              borderRadius: "6px",
-              border: "1px solid #cbd5e1",
-              outline: "none",
-              fontSize: "14px",
-              resize: "none",
-              fontFamily: "inherit",
+            InputLabelProps={{ shrink: true }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+              },
             }}
           />
-        </div>
 
-        {/* Nút gửi */}
-        <button
-          type="submit"
-          disabled={submitting}
-          style={{
-            width: "100%",
-            backgroundColor: submitting ? "#cbd5e1" : "#ef4444",
-            color: "#fff",
-            fontWeight: "bold",
-            padding: "12px",
-            border: "none",
-            borderRadius: "6px",
-            cursor: submitting ? "not-allowed" : "pointer",
-            fontSize: "16px",
-            transition: "all 0.2s",
-          }}
-        >
-          {submitting ? "Đang gửi yêu cầu..." : "Gửi Yêu Cầu Hỗ Trợ"}
-        </button>
-      </form>
-    </div>
+          {/* Nút gửi báo cáo */}
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={submitting}
+            size="large"
+            endIcon={!submitting && <SendIcon />}
+            sx={{
+              padding: "12px",
+              backgroundColor: "#ef4444",
+              fontWeight: "bold",
+              fontSize: "16px",
+              borderRadius: "8px",
+              textTransform: "none",
+              boxShadow: "0 4px 12px rgba(239, 68, 68, 0.2)",
+              "&:hover": {
+                backgroundColor: "#dc2626",
+              },
+              "&.Mui-disabled": {
+                backgroundColor: "#cbd5e1",
+                color: "#94a3b8",
+              },
+            }}
+          >
+            {submitting ? (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <CircularProgress size={20} color="inherit" />
+                <span>Đang gửi yêu cầu...</span>
+              </Box>
+            ) : (
+              "Gửi Yêu Cầu Hỗ Trợ"
+            )}
+          </Button>
+        </Box>
+      </CardContent>
+    </Card>
   );
 };
 

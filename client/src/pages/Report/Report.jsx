@@ -4,7 +4,10 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useTranslation } from "react-i18next";
 
+import { Box, Typography } from "@mui/material";
 import api from "../../helper/api";
+import ReportSearch from "../../components/report/ReportSearch";
+import TableReport from "../../components/report/Table";
 
 const Report = () => {
   const { t } = useTranslation();
@@ -76,9 +79,6 @@ const Report = () => {
           days: {},
         };
       }
-
-      // 🌟 CẬP NHẬT: Ưu tiên lấy giá trị số đo (row.value) trước, nếu không có mới lấy trạng thái (row.result)
-      // Dùng mã này để tránh việc số 0 bị hiểu lầm là không có dữ liệu:
       matrix[row.item_id].days[row.day_num] =
         row.value !== null && row.value !== undefined && row.value !== ""
           ? row.value
@@ -336,298 +336,46 @@ const Report = () => {
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Segoe UI, sans-serif" }}>
-      <h2
-        style={{
+    <Box sx={{ padding: 3, fontFamily: "Segoe UI, sans-serif" }}>
+      {/* TIÊU ĐỀ TRANG */}
+      <Typography
+        variant="h5"
+        component="h2"
+        sx={{
+          fontWeight: "bold",
           color: "#1e293b",
           borderBottom: "2px solid #e2e8f0",
-          paddingBottom: "10px",
+          pb: 1.5,
+          mb: 3,
         }}
       >
         {t(`report.title`)}
-      </h2>
+      </Typography>
 
       {/* BỘ LỌC TÌM KIẾM */}
-      <div
-        style={{
-          display: "flex",
-          gap: "15px",
-          alignItems: "flex-end",
-          marginBottom: "25px",
-          backgroundColor: "#f8fafc",
-          padding: "15px",
-          borderRadius: "6px",
-        }}
-      >
-        {/* Các ô Select Machine và Input Month giữ nguyên như file trước của bạn */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-          <label style={{ fontWeight: "bold", color: "#475569" }}>
-            {t(`report.selectmachine`)}
-          </label>
-          <select
-            value={selectedMachine}
-            onChange={(e) => setSelectedMachine(e.target.value)}
-            style={{
-              padding: "6px 12px",
-              borderRadius: "4px",
-              border: "1px solid #cbd5e1",
-            }}
-          >
-            <option value="">-- {t(`report.selectmachine`)} --</option>
-            {machines.map((m) => (
-              <option key={m.machine_id} value={m.machine_id}>
-                {m.machine_code} - {m.machine_name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-          <label style={{ fontWeight: "bold", color: "#475569" }}>
-            {t(`report.month`)}
-          </label>
-          <input
-            type="month"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            style={{
-              padding: "5px 12px",
-              borderRadius: "4px",
-              border: "1px solid #cbd5e1",
-            }}
-          />
-        </div>
+      <ReportSearch
+        t={t}
+        selectedMachine={selectedMachine}
+        setSelectedMachine={setSelectedMachine}
+        machines={machines}
+        selectedMonth={selectedMonth}
+        setSelectedMonth={setSelectedMonth}
+        handleFetchReport={handleFetchReport}
+        loading={loading}
+        reportData={reportData}
+        exportToExcel={exportToExcel}
+        exportToPDF={exportToPDF}
+        approvers={approvers}
+      />
 
-        <button
-          onClick={handleFetchReport}
-          disabled={loading}
-          style={{
-            padding: "6px 20px",
-            backgroundColor: "#2563eb",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontWeight: "bold",
-          }}
-        >
-          {loading ? "Đang tải..." : t("report.viewreport")}
-        </button>
-
-        {/* 🌟 CÁC NÚT XUẤT FILE MỚI ĐƯỢC THÊM VÀO GIỮA THANH CÔNG CỤ */}
-        {reportData.length > 0 && (
-          <>
-            <button
-              onClick={exportToExcel}
-              style={{
-                padding: "6px 15px",
-                backgroundColor: "#16a34a",
-                color: "#fff",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-              }}
-            >
-              📥 {t(`report.exportexcel`)}
-            </button>
-
-            <button
-              onClick={exportToPDF}
-              style={{
-                padding: "6px 15px",
-                backgroundColor: "#dc2626",
-                color: "#fff",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-              }}
-            >
-              📄 {t(`report.exportpdf`)}
-            </button>
-          </>
-        )}
-
-        {approvers.length > 0 && (
-          <div
-            style={{
-              marginLeft: "auto",
-              padding: "8px 15px",
-              backgroundColor: "#e2e8f0",
-              borderRadius: "4px",
-              fontSize: "13px",
-            }}
-          >
-            <strong>{t(`report.approver`)}:</strong> {approvers.join(", ")}
-          </div>
-        )}
-      </div>
-
-      {/* BẢNG DỮ LIỆU */}
-      <div
-        style={{
-          overflowX: "auto",
-          boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-          borderRadius: "8px",
-        }}
-      >
-        <table
-          border="1"
-          cellPadding="6"
-          cellSpacing="0"
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            textAlign: "center",
-            fontSize: "13px",
-            borderColor: "#e2e8f0",
-          }}
-        >
-          <thead>
-            <tr style={{ backgroundColor: "#0f172a", color: "#ffffff" }}>
-              <th rowSpan="2" style={{ padding: "10px" }}>
-                {t(`report.stt`)}
-              </th>
-              <th rowSpan="2" style={{ minWidth: "180px" }}>
-                {t(`report.category`)}
-              </th>
-              <th rowSpan="2" style={{ minWidth: "140px" }}>
-                {t(`report.standard`)}
-              </th>
-              <th rowSpan="2" style={{ minWidth: "90px" }}>
-                {t(`report.classify`)}
-              </th>
-              <th colSpan={totalDays} style={{ padding: "8px" }}>
-                {t(`report.day`)}
-              </th>
-            </tr>
-            <tr style={{ backgroundColor: "#334155", color: "#ffffff" }}>
-              {daysArray.map((day) => (
-                <th key={day} style={{ width: "32px", padding: "4px" }}>
-                  {day}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {reportData.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={totalDays + 4}
-                  style={{
-                    padding: "30px",
-                    color: "#94a3b8",
-                    fontStyle: "italic",
-                    backgroundColor: "#fff",
-                  }}
-                >
-                  Không tìm thấy dữ liệu checksheet đã duyệt.
-                </td>
-              </tr>
-            ) : (
-              reportData.map((item, index) => (
-                <tr
-                  key={index}
-                  style={{
-                    backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                  }}
-                >
-                  <td style={{ padding: "8px", color: "#64748b" }}>
-                    {index + 1}
-                  </td>
-                  <td
-                    style={{
-                      textAlign: "left",
-                      fontWeight: "600",
-                      color: "#334155",
-                      paddingLeft: "10px",
-                    }}
-                  >
-                    {item.item_name}
-                  </td>
-                  <td
-                    style={{
-                      textAlign: "left",
-                      paddingLeft: "10px",
-                      color: "#475569",
-                    }}
-                  >
-                    {item.standard_value}
-                  </td>
-                  <td style={{ color: "#64748b" }}>{item.item_type}</td>
-
-                  {daysArray.map((day) => {
-                    // Tìm đến vòng lặp ngày trong <tbody> và sửa logic màu:
-                    const cellValue = item.days[day];
-                    let cellBgColor = "transparent";
-                    let cellTextColor = "#334155";
-
-                    if (cellValue === "OK" || cellValue === "ok") {
-                      cellBgColor = "#dcfce7";
-                      cellTextColor = "#15803d";
-                    } else if (
-                      cellValue === "NG" ||
-                      cellValue === "ng" ||
-                      cellValue === "X" ||
-                      cellValue === "x"
-                    ) {
-                      cellBgColor = "#fee2e2";
-                      cellTextColor = "#b91c1c";
-                    } else if (
-                      item.item_type === "NUMBER" &&
-                      cellValue !== undefined &&
-                      cellValue !== null &&
-                      cellValue !== ""
-                    ) {
-                      const numVal = parseFloat(cellValue);
-                      const minVal =
-                        item.min_value !== null
-                          ? parseFloat(item.min_value)
-                          : null;
-                      const maxVal =
-                        item.max_value !== null
-                          ? parseFloat(item.max_value)
-                          : null;
-
-                      // 🌟 Kiểm tra nếu số đo nhỏ hơn mức tối thiểu HOẶC lớn hơn mức tối đa thì tính là NG (Lỗi)
-                      if (
-                        (minVal !== null && numVal < minVal) ||
-                        (maxVal !== null && numVal > maxVal)
-                      ) {
-                        cellBgColor = "#fee2e2"; // Nền đỏ nhạt
-                        cellTextColor = "#b91c1c"; // Chữ đỏ đậm
-                      } else {
-                        cellBgColor = "#dcfce7"; // Nếu nằm trong khoảng tiêu chuẩn thì tự động tô màu xanh OK
-                        cellTextColor = "#15803d";
-                      }
-                    }
-                    return (
-                      <td
-                        key={day}
-                        style={{
-                          backgroundColor: cellBgColor,
-                          color: cellTextColor,
-                          fontWeight: "bold",
-                          border: "1px solid #cbd5e1",
-                        }}
-                      >
-                        {cellValue || ""}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      {/* BẢNG MA TRẬN DỮ LIỆU */}
+      <TableReport
+        t={t}
+        reportData={reportData}
+        daysArray={daysArray}
+        totalDays={totalDays}
+      />
+    </Box>
   );
 };
 
