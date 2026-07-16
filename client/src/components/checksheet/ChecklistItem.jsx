@@ -1,5 +1,4 @@
 /* eslint-disable react/prop-types */
-
 import {
   Box,
   Button,
@@ -9,15 +8,6 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-
-// import {
-//   Box,
-//   Divider,
-//   Typography,
-//   ToggleButton,
-//   ToggleButtonGroup,
-//   TextField,
-// } from "@mui/material";
 
 export default function ChecklistItem({
   checklistItems,
@@ -52,23 +42,50 @@ export default function ChecklistItem({
               fontWeight: "600",
             }}
           >
-            <TableCell sx={{ padding: "14px 16px", width: "60px" }}>
+            <TableCell
+              style={{
+                width: "10%",
+                padding: "10px 4px",
+                fontSize: "13px",
+                fontWeight: "bold",
+                color: "#64748b",
+              }}
+            >
               STT
             </TableCell>
-            <TableCell sx={{ padding: "14px 16px" }}>
-              Hạng mục kiểm tra
-            </TableCell>
-            <TableCell sx={{ padding: "14px 16px" }}>
-              Tiêu chuẩn quản lý
+            <TableCell
+              style={{
+                width: "30%",
+                padding: "10px 4px",
+                fontSize: "13px",
+                fontWeight: "bold",
+                color: "#64748b",
+              }}
+            >
+              Hạng mục
             </TableCell>
             <TableCell
-              sx={{
-                padding: "14px 16px",
-                width: "220px",
+              style={{
+                width: "32%",
+                padding: "10px 4px",
+                fontSize: "13px",
+                fontWeight: "bold",
+                color: "#64748b",
+              }}
+            >
+              Tiêu chuẩn
+            </TableCell>
+            <TableCell
+              style={{
+                width: "28%",
+                padding: "10px 4px",
+                fontSize: "13px",
+                fontWeight: "bold",
+                color: "#64748b",
                 textAlign: "center",
               }}
             >
-              Kết quả đánh giá
+              Kết quả
             </TableCell>
           </TableRow>
         </TableHead>
@@ -93,23 +110,24 @@ export default function ChecklistItem({
                 key={item.item_id}
                 sx={{ borderBottom: "1px solid #f1f5f9" }}
               >
-                <TableCell style={{ padding: "16px", color: "#64748b" }}>
+                <TableCell sx={{ textAlign: "center", color: "#64748b" }}>
                   {item.display_order || index + 1}
                 </TableCell>
                 <TableCell
-                  style={{
-                    padding: "16px",
-                    fontWeight: "600",
-                    color: "#334155",
+                  sx={{
+                    fontWeight: "bold",
+                    color: "#1e293b",
+                    wordBreak: "break-word",
                   }}
                 >
                   {item.item_name}
                 </TableCell>
                 <TableCell
-                  style={{
-                    padding: "16px",
+                  sx={{
                     color: "#475569",
-                    lineHeight: "1.5",
+                    fontSize: "12px",
+                    wordBreak: "break-word",
+                    lineHeight: "1.4",
                   }}
                 >
                   {item.standard_value}
@@ -118,9 +136,16 @@ export default function ChecklistItem({
                   {item.unit && ` [${item.unit}]`}
                 </TableCell>
 
-                <TableCell style={{ padding: "16px", textAlign: "center" }}>
+                <TableCell>
                   {item.item_type === "OKNG" ? (
-                    <Box style={{ display: "inline-flex", gap: "10px" }}>
+                    <Box
+                      sx={{
+                        display: "inline-flex",
+                        flexDirection: { xs: "column", sm: "row" },
+                        gap: "8px",
+                        width: { xs: "100%", sm: "auto" },
+                      }}
+                    >
                       <Button
                         onClick={() => handleStatusChange(item.item_id, "OK")}
                         sx={{
@@ -130,6 +155,9 @@ export default function ChecklistItem({
                           fontWeight: "700",
                           fontSize: "13px",
                           transition: "all 0.15s",
+                          width: { xs: "100%", sm: "70px" },
+                          minWidth: "60px",
+                          padding: "6px 12px",
                           backgroundColor:
                             results[item.item_id]?.value === "OK"
                               ? "#57b846"
@@ -151,6 +179,9 @@ export default function ChecklistItem({
                           fontWeight: "700",
                           fontSize: "13px",
                           transition: "all 0.15s",
+                          width: { xs: "100%", sm: "70px" },
+                          minWidth: "60px",
+                          padding: "6px 12px",
                           backgroundColor:
                             results[item.item_id]?.value === "NG"
                               ? "#dc3545"
@@ -173,7 +204,7 @@ export default function ChecklistItem({
                         handleTextChange(item.item_id, e.target.value)
                       }
                       style={{
-                        width: "55%",
+                        width: "100%",
                         padding: "8px 12px",
                         borderRadius: "6px",
                         border: "1px solid #cbd5e1",

@@ -34,7 +34,7 @@ export default function HeaderCard({
         <Box style={{ fontSize: "16px", fontWeight: "700", color: "#1e293b" }}>
           Mã máy:{" "}
           <span
-            style={{ fontWeight: "500", color: "#475569", marginLeft: "8px" }}
+            style={{ fontWeight: "600", color: "#475569", marginLeft: "8px" }}
           >
             {machine?.machine_code}
           </span>
@@ -42,7 +42,7 @@ export default function HeaderCard({
         <Box style={{ fontSize: "16px", fontWeight: "700", color: "#1e293b" }}>
           Tên máy:{" "}
           <span
-            style={{ fontWeight: "500", color: "#475569", marginLeft: "8px" }}
+            style={{ fontWeight: "600", color: "#475569", marginLeft: "8px" }}
           >
             {machine?.machine_name}
           </span>
@@ -55,7 +55,6 @@ export default function HeaderCard({
           flexDirection: "column",
           gap: "16px",
           width: "100%",
-          maxWidth: "360px",
           backgroundColor: "#ffffff",
           padding: "20px",
           borderRadius: "12px",
@@ -74,15 +73,14 @@ export default function HeaderCard({
           </label>
           <input
             type="text"
-            // Hiển thị tên người duyệt lấy từ DB, nếu trống thì báo Chưa cấu hình
             value={machine?.approver_name || "Chưa cấu hình người duyệt"}
-            disabled // 👈 Thuộc tính khóa ô này lại, công nhân không thể sửa bằng tay
+            disabled
             style={{
               width: "100%",
               padding: "10px",
               borderRadius: "4px",
               border: "1px solid #cbd5e1",
-              backgroundColor: "#f1f5f9", // Đổi nền xám để nhận biết ô bị khóa
+              backgroundColor: "#f1f5f9",
               color: "#475569",
               fontWeight: "bold",
             }}
@@ -157,7 +155,7 @@ export default function HeaderCard({
               marginBottom: "6px",
             }}
           >
-            Ca
+            Ca làm việc
           </label>
           <select
             value={shift}
