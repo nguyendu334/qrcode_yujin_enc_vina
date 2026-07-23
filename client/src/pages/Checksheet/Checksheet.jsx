@@ -10,6 +10,8 @@ import HeaderCard from "../../components/checksheet/HeaderCard";
 import ChecklistItem from "../../components/checksheet/ChecklistItem";
 import FooterSubmit from "../../components/checksheet/FooterSubmit";
 import api from "../../helper/api";
+import { Button } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 function ChecksheetPage() {
   const location = useLocation();
@@ -28,6 +30,8 @@ function ChecksheetPage() {
 
   // State lưu kết quả động: { [item_id]: { type: 'OKNG'/'TEXT', value: '' } }
   const [results, setResults] = useState({});
+
+  const { t } = useTranslation();
 
   useEffect(() => {
     // 1. Đồng bộ thời gian thực tế hiển thị trên form
@@ -74,7 +78,7 @@ function ChecksheetPage() {
         .catch((err) => {
           setError(
             err.response?.data?.error ||
-              "Không thể tải cấu hình hạng mục cho thiết bị này."
+              "Không thể tải cấu hình hạng mục cho thiết bị này.",
           );
           setLoading(false);
         });
@@ -187,7 +191,7 @@ function ChecksheetPage() {
       // Nếu API trả về lỗi (Ví dụ: Trùng lịch, lỗi DB...), code nhảy vào đây và KHÔNG reset form
       console.error("Lỗi gửi dữ liệu checksheet:", err);
       toast.error(
-        "Lỗi nộp phiếu: " + (err.response?.data?.error || err.message)
+        "Lỗi nộp phiếu: " + (err.response?.data?.error || err.message),
       );
     }
   };
@@ -227,6 +231,13 @@ function ChecksheetPage() {
         boxSizing: "border-box",
       }}
     >
+      <Button
+        sx={{ marginBottom: "20px" }}
+        variant="outlined"
+        onClick={() => window.history.back()}
+      >
+        {t("back")}
+      </Button>
       {/* TIÊU ĐỀ BIẾN ĐỔI ĐỘNG */}
       <h2
         style={{

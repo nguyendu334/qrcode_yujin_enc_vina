@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 
 import { Box } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 // import { Box, Typography, Chip } from "@mui/material";
 
@@ -12,6 +13,8 @@ export default function HeaderCard({
   shift,
   setShift,
 }) {
+  const { t } = useTranslation();
+
   return (
     <Box
       sx={{
@@ -32,7 +35,7 @@ export default function HeaderCard({
         }}
       >
         <Box style={{ fontSize: "16px", fontWeight: "700", color: "#1e293b" }}>
-          Mã máy:{" "}
+          {t("history.machinecode")}:{" "}
           <span
             style={{ fontWeight: "600", color: "#475569", marginLeft: "8px" }}
           >
@@ -40,7 +43,7 @@ export default function HeaderCard({
           </span>
         </Box>
         <Box style={{ fontSize: "16px", fontWeight: "700", color: "#1e293b" }}>
-          Tên máy:{" "}
+          {t("history.machinename")}:{" "}
           <span
             style={{ fontWeight: "600", color: "#475569", marginLeft: "8px" }}
           >
@@ -69,7 +72,7 @@ export default function HeaderCard({
               marginBottom: "5px",
             }}
           >
-            Người phê duyệt phiếu:
+            {t("history.approver")}:{" "}
           </label>
           <input
             type="text"
@@ -96,13 +99,13 @@ export default function HeaderCard({
               marginBottom: "6px",
             }}
           >
-            Người kiểm tra
+            {t("history.inspector")}
           </label>
           <input
             type="text"
             value={inspector}
             onChange={(e) => setInspector(e.target.value)}
-            placeholder="Nhập tên người kiểm tra"
+            placeholder={t("machinemenu.typing")}
             style={{
               width: "100%",
               padding: "10px 12px",
@@ -125,7 +128,7 @@ export default function HeaderCard({
               marginBottom: "6px",
             }}
           >
-            Ngày kiểm tra
+            {t("history.date")}
           </label>
           <input
             type="text"
@@ -155,7 +158,7 @@ export default function HeaderCard({
               marginBottom: "6px",
             }}
           >
-            Ca làm việc
+            {t("history.shift")}
           </label>
           <select
             value={shift}
@@ -172,9 +175,9 @@ export default function HeaderCard({
               cursor: "pointer",
             }}
           >
-            <option value="">Chọn ca</option>
-            <option value="Ca ngày">Ca ngày (Day Shift)</option>
-            <option value="Ca đêm">Ca đêm (Night Shift)</option>
+            <option value="">{t("history.selectshift")}</option>
+            <option value="Ca ngày">{t("shift.Ca ngày")}</option>
+            <option value="Ca đêm">{t("shift.Ca đêm")}</option>
           </select>
         </Box>
       </Box>

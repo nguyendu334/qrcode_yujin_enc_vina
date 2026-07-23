@@ -7,15 +7,42 @@ import {
   Typography,
   Chip,
   Avatar,
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 import {
   Settings as GearIcon,
   AssignmentTurnedIn as ChecksheetIcon,
   ReportProblem as WarningIcon,
+  Language as LanguageIcon,
 } from "@mui/icons-material";
 import { getChecksheet } from "../../services/checksheetService";
+import { useTranslation } from "react-i18next";
 
 const MachineMenu = () => {
+  const { i18n } = useTranslation();
+  const { t } = useTranslation();
+
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const open = Boolean(anchorEl);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const changeLanguage = (lang) => {
+    i18n.changeLanguage(lang);
+    handleClose();
+  };
+
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -92,8 +119,48 @@ const MachineMenu = () => {
             padding: 3,
             borderRadius: 3,
             borderColor: "#e2e8f0",
+            position: "relative",
           }}
         >
+          <Box
+            sx={{
+              position: "absolute",
+              top: "5px",
+              right: "5px",
+              zIndex: 10,
+            }}
+          >
+            <IconButton color="inherit" onClick={handleClick}>
+              <LanguageIcon />
+            </IconButton>
+
+            <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+              <MenuItem
+                selected={i18n.language === "vi"}
+                onClick={() => changeLanguage("vi")}
+              >
+                <ListItemIcon>🇻🇳</ListItemIcon>
+                <ListItemText>Tiếng Việt</ListItemText>
+              </MenuItem>
+
+              <MenuItem
+                selected={i18n.language === "en"}
+                onClick={() => changeLanguage("en")}
+              >
+                <ListItemIcon>🇺🇸</ListItemIcon>
+                <ListItemText>English</ListItemText>
+              </MenuItem>
+
+              <MenuItem
+                selected={i18n.language === "ko"}
+                onClick={() => changeLanguage("ko")}
+              >
+                <ListItemIcon>🇰🇷</ListItemIcon>
+                <ListItemText>한국어</ListItemText>
+              </MenuItem>
+            </Menu>
+          </Box>
+
           <CardContent sx={{ p: 0, "&:last-child": { pb: 0 } }}>
             {/* Icon bánh răng máy móc */}
             <Avatar
@@ -139,7 +206,7 @@ const MachineMenu = () => {
               variant="subtitle1"
               sx={{ fontWeight: 600, color: "#334155" }}
             >
-              Người phụ trách: {machine.approver_name}
+              {t(`machinemenu.manage`)}: {machine.approver_name}
             </Typography>
           </CardContent>
         </Card>
@@ -155,7 +222,7 @@ const MachineMenu = () => {
           marginBottom: 2.5,
         }}
       >
-        Vui lòng chọn tác vụ bạn muốn thực hiện:
+        {t(`machinemenu.selecttask`)}:
       </Typography>
 
       {/* KHU VỰC CÁC LỰA CHỌN HÀNH ĐỘNG */}
@@ -212,7 +279,7 @@ const MachineMenu = () => {
                 margin: 0,
               }}
             >
-              KIỂM TRA ĐỊNH KỲ (CHECKSHEET)
+              {t(`machinemenu.checksheet`)}
             </Typography>
             <Typography
               sx={{
@@ -223,7 +290,7 @@ const MachineMenu = () => {
                 margin: 0,
               }}
             >
-              Thực hiện kiểm tra máy đầu ca hoặc định kỳ hàng ngày
+              {t(`machinemenu.deschecksheet`)}
             </Typography>
           </Box>
         </Box>
@@ -282,7 +349,7 @@ const MachineMenu = () => {
                 margin: 0,
               }}
             >
-              BÁO CÁO SỰ CỐ THIẾT BỊ
+              {t(`machinemenu.report`)}
             </Typography>
             <Typography
               sx={{
@@ -293,7 +360,7 @@ const MachineMenu = () => {
                 margin: 0,
               }}
             >
-              Máy gặp sự cố hỏng hóc, cần gọi sửa chữa gấp
+              {t(`machinemenu.desreport`)}
             </Typography>
           </Box>
         </Box>

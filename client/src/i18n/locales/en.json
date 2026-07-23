@@ -143,7 +143,7 @@
     "priority": "Priority",
     "low": "Low",
     "nomal": "Normal",
-    "high": "High", 
+    "high": "High",
     "close": "Close",
     "pending": "Pending",
     "processing": "Processing",
@@ -160,6 +160,24 @@
     "btn_close_ticket": "Confirm Fixed (Close Ticket)",
     "btn_start_processing": "Accept & Start Repair"
   },
+  "machinemenu": {
+    "manage": "Person in charge",
+    "selecttask": "Please select the task you want to perform",
+    "checksheet": "PERIODIC INSPECTION (CHECKSHEET)",
+    "report": "EQUIPMENT BREAKDOWN REPORT",
+    "deschecksheet": "Perform initial shift or daily equipment inspections",
+    "desreport": "Equipment is malfunctioning or broken down, urgent repair required",
+    "descreate": "Send a malfunction request to the engineering department",
+    "ngdevice": "DEFECTIVE/MALFUNCTIONING EQUIPMENT",
+    "reporter": "Person who detected the issue",
+    "description": "Issue description",
+    "priority": "Urgency level",
+    "send": "Submit request",
+    "nomal": "Normal (Repair within shift)",
+    "high": "Urgent (Machine down - immediate repair required)",
+    "low": "Low (Repair within day)",
+    "typing": "Enter inspector's name"
+  },
   "edit": "Edit",
   "delete": "Delete",
   "search": "Search .......",
@@ -168,6 +186,7 @@
   "username": "Username",
   "login": "Login",
   "save": "Save",
-  "cancel": "Cancel",
+  "back": "Back",
+
   "exportQR": "Export QR"
 }

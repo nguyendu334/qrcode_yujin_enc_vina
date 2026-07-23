@@ -160,6 +160,24 @@
     "btn_close_ticket": "Xác Nhận Sửa Xong (Đóng Ticket)",
     "btn_start_processing": "Tiếp Nhận & Bắt Đầu Sửa"
   },
+  "machinemenu": {
+    "manage": "Người phụ trách",
+    "selecttask": "Vui lòng chọn tác vụ bạn muốn thực hiện",
+    "checksheet": "KIỂM TRA ĐỊNH KỲ (CHECKSHEET)",
+    "report": "BÁO CÁO SỰ CỐ THIẾT BỊ",
+    "deschecksheet": "Thực hiện kiểm tra máy đầu ca hoặc hàng ngày",
+    "desreport": "Máy gặp sự cố hoặc hỏng hóc cần gọi sửa chữa gấp",
+    "descreate": "Gửi yêu cầu sự cố đến bộ phận kỹ thuật",
+    "ngdevice": "THIẾT BỊ PHÁT SINH SỰ CỐ",
+    "reporter": "Người phát hiện sự cố",
+    "description": "Mô tả sự cố",
+    "priority": "Mức độ khẩn cấp",
+    "send": "Gửi yêu cầu",
+    "nomal": "Bình thường (Sửa trong ca)",
+    "high": "Khẩn cấp (Dừng máy cần sửa ngay)",
+    "low": "Thấp (Sửa trong ngày)",
+    "typing": "Nhập tên người kiểm tra"
+  },
   "edit": "Sửa",
   "delete": "Xoá",
   "search": "Tìm kiếm .....",
@@ -168,6 +186,6 @@
   "logout": "Đăng xuất",
   "login": "Đăng nhập",
   "save": "Lưu",
-  "cancel": "Hủy",
+  "back": "Trở lại",
   "exportQR": "Xuất QR"
 }

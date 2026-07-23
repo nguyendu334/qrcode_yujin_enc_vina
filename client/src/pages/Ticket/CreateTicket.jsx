@@ -18,6 +18,7 @@ import {
 
 import api from "../../helper/api";
 import { getChecksheet } from "../../services/checksheetService";
+import { useTranslation } from "react-i18next";
 
 const CreateTicket = () => {
   const location = useLocation();
@@ -30,6 +31,7 @@ const CreateTicket = () => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const { t } = useTranslation();
 
   // 🔍 Tự động nhận diện Máy từ mã QR (?machine=ID) giống hệt Checkshet
   useEffect(() => {
@@ -81,7 +83,7 @@ const CreateTicket = () => {
       setPriority("NORMAL");
     } catch (err) {
       toast.error(
-        "Gửi yêu cầu thất bại: " + (err.response?.data?.error || err.message)
+        "Gửi yêu cầu thất bại: " + (err.response?.data?.error || err.message),
       );
     } finally {
       setSubmitting(false);
@@ -120,6 +122,13 @@ const CreateTicket = () => {
         backgroundColor: "#ffffff",
       }}
     >
+      <Button
+        sx={{ margin: "20px 0 0 20px" }}
+        variant="outlined"
+        onClick={() => window.history.back()}
+      >
+        {t("back")}
+      </Button>
       <CardContent sx={{ p: 4 }}>
         {/* TIÊU ĐỀ TRANG BÁO CÁO */}
         <Box
@@ -144,11 +153,11 @@ const CreateTicket = () => {
               component="h2"
               sx={{ fontWeight: "bold", letterSpacing: "0.5px" }}
             >
-              BÁO CÁO SỰ CỐ THIẾT BỊ
+              {t("machinemenu.report")}
             </Typography>
           </Box>
           <Typography variant="body2" sx={{ color: "#64748b", mt: 0.5 }}>
-            Gửi yêu cầu sửa chữa đến bộ phận kỹ thuật
+            {t("machinemenu.descreate")}
           </Typography>
         </Box>
 
@@ -171,7 +180,7 @@ const CreateTicket = () => {
                 letterSpacing: "0.5px",
               }}
             >
-              THIẾT BỊ PHÁT SINH SỰ CỐ:
+              {t("machinemenu.ngdevice")}
             </Typography>
             <Typography
               variant="subtitle1"
@@ -198,7 +207,7 @@ const CreateTicket = () => {
         >
           {/* Ô nhập: Người báo cáo */}
           <TextField
-            label="Người phát hiện sự cố"
+            label={t("machinemenu.reporter")}
             required
             fullWidth
             variant="outlined"
@@ -216,7 +225,7 @@ const CreateTicket = () => {
           {/* Ô chọn: Mức độ khẩn cấp */}
           <TextField
             select
-            label="Mức độ khẩn cấp của lỗi"
+            label={t("machinemenu.priority")}
             fullWidth
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
@@ -227,8 +236,8 @@ const CreateTicket = () => {
               },
             }}
           >
-            <MenuItem value="LOW">Thấp (Có thể sửa sau)</MenuItem>
-            <MenuItem value="NORMAL">Bình thường (Sửa trong ca)</MenuItem>
+            <MenuItem value="LOW">{t("machinemenu.low")}</MenuItem>
+            <MenuItem value="NORMAL">{t("machinemenu.nomal")}</MenuItem>
             <MenuItem value="HIGH">
               <Box
                 sx={{
@@ -238,14 +247,14 @@ const CreateTicket = () => {
                   alignItems: "center",
                 }}
               >
-                Khẩn cấp (Dừng máy, cần sửa ngay!)
+                {t("machinemenu.high")}
               </Box>
             </MenuItem>
           </TextField>
 
           {/* Ô nhập: Mô tả chi tiết lỗi */}
           <TextField
-            label="Mô tả hiện tượng sự cố"
+            label={t("machinemenu.description")}
             required
             fullWidth
             multiline
@@ -291,7 +300,7 @@ const CreateTicket = () => {
                 <span>Đang gửi yêu cầu...</span>
               </Box>
             ) : (
-              "Gửi Yêu Cầu Hỗ Trợ"
+              t("machinemenu.send")
             )}
           </Button>
         </Box>

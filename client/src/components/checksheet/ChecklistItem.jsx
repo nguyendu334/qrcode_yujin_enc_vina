@@ -9,12 +9,15 @@ import {
   TableRow,
 } from "@mui/material";
 
+import { useTranslation } from "react-i18next";
+
 export default function ChecklistItem({
   checklistItems,
   handleStatusChange,
   results,
   handleTextChange,
 }) {
+  const { t } = useTranslation();
   return (
     <Box
       style={{
@@ -51,7 +54,7 @@ export default function ChecklistItem({
                 color: "#64748b",
               }}
             >
-              STT
+              {t("report.stt")}
             </TableCell>
             <TableCell
               style={{
@@ -62,7 +65,7 @@ export default function ChecklistItem({
                 color: "#64748b",
               }}
             >
-              Hạng mục
+              {t("report.category")}
             </TableCell>
             <TableCell
               style={{
@@ -73,7 +76,7 @@ export default function ChecklistItem({
                 color: "#64748b",
               }}
             >
-              Tiêu chuẩn
+              {t("report.standard")}
             </TableCell>
             <TableCell
               style={{
@@ -85,7 +88,7 @@ export default function ChecklistItem({
                 textAlign: "center",
               }}
             >
-              Kết quả
+              {t("history.result")}
             </TableCell>
           </TableRow>
         </TableHead>

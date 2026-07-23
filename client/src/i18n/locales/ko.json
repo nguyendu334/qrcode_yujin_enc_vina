@@ -161,6 +161,24 @@
     "btn_close_ticket": "조치 완료 (티켓 닫기)",
     "btn_start_processing": "접수 및 조치 시작"
   },
+  "machinemenu": {
+    "manage": "담당자",
+    "selecttask": "원하시는 작업을 선택해 주세요",
+    "checksheet": "정기 점검 (체크시트)",
+    "report": "설비 고장 신고",
+    "deschecksheet": "교대 시작 전 점검 또는 일일 설비 점검 실시",
+    "desreport": "설비 고장 또는 파손 발생, 즉각적인 수리 요청 필요",
+    "descreate": "기술 부서로 설비 고장 요청 발송",
+    "ngdevice": "문제 발생 설비",
+    "reporter": "고장 발견자",
+    "description": "고장 내용 설명",
+    "priority": "긴급도",
+    "send": "요청 보내기",
+    "nomal": "보통 (당직 교대 내 수리)",
+    "high": "긴급 (설비 정지 - 즉시 수리 필요)",
+    "low": "낮음 (당일 내 수리)",
+    "typing": "점검자 이름 입력"
+  },
   "edit": "수정",
   "delete": "삭제",
   "password": "비밀번호",
@@ -169,6 +187,6 @@
   "search": "Search ......",
   "logout": "로그아웃",
   "save": "저장",
-  "cancel": "취소",
+  "back": "뒤로가기",
   "exportQR": "QR 출력"
 }
