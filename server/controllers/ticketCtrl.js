@@ -1,5 +1,7 @@
 // controllers/ticketController.js
 const { pool } = require("../config/db");
+// const { sendDirectTeamsMessage } = require("../services/teamsService");
+const { sendTicketEmail } = require("../services/emailService");
 
 const createTicket = async (req, res) => {
   const { machine_id, reporter_name, issue_description, priority } = req.body;
@@ -30,6 +32,101 @@ const createTicket = async (req, res) => {
       message: "Gửi yêu cầu sửa chữa (Ticket) thành công!",
       ticket_id: result.rows[0].ticket_id,
     });
+
+// Send Teams
+    // try {
+    //   const getDetailQuery = `
+    //     SELECT
+    //       m.machine_code,
+    //       m.machine_name,
+    //       m.line_no,
+    //       ct.approver_id,
+    //       u.full_name AS approver_name,
+    //       u.email AS approver_email
+    //     FROM machine m
+    //     JOIN machine_type mt ON m.machine_type_id = mt.machine_type_id
+    //     JOIN checklist_template ct ON mt.machine_type_id = ct.machine_type_id
+    //     LEFT JOIN users u ON ct.approver_id = u.user_id -- (Giả định bạn có bảng users, nếu có)
+    //     WHERE m.machine_id = $1
+    //     LIMIT 1;
+    //   `;
+
+    //   const detailRes = await pool.query(getDetailQuery, [machine_id]);
+
+    //   const info = detailRes.rows[0] || {};
+    //   console.log(info.approver_email);
+    //   if (info.approver_email) {
+    //     sendDirectTeamsMessage(info.approver_email, {
+    //       machine_code: info.machine_code,
+    //       machine_name: info.machine_name,
+    //       line_no: info.line_no,
+    //       reporter_name,
+    //       issue_description,
+    //       priority: priority || "NORMAL",
+    //     });
+    //   }
+    // } catch (bgErr) {
+    //   console.error("Lỗi lấy thông tin máy gửi Teams:", bgErr.message);
+    // }
+
+// Webhook
+    // try {
+    //   const getDetailQuery = `
+    //     SELECT machine_code, machine_name, line_no
+    //     FROM machine
+    //     WHERE machine_id = $1
+    //   `;
+    //   const detailRes = await pool.query(getDetailQuery, [machine_id]);
+    //   const machineInfo = detailRes.rows[0] || {};
+
+    //   // Lấy URL Webhook (Lấy từ .env hoặc từ cột webhook trong DB)
+    //   const targetWebhookUrl = process.env.TEAMS_WEBHOOK_URL;
+
+    //   sendDirectTeamsMessage(targetWebhookUrl, {
+    //     machine_code: machineInfo.machine_code,
+    //     machine_name: machineInfo.machine_name,
+    //     line_no: machineInfo.line_no,
+    //     reporter_name,
+    //     issue_description,
+    //     priority: priority || "NORMAL",
+    //   });
+    // } catch (bgErr) {
+    //   console.error("Lỗi lấy thông tin máy gửi Webhook:", bgErr.message);
+    // }
+
+// Send mail
+    try {
+      const getDetailQuery = `
+        SELECT 
+          m.machine_code,
+          m.machine_name,
+          m.line_no,
+          u.email AS approver_email
+        FROM machine m
+        JOIN machine_type mt ON m.machine_type_id = mt.machine_type_id
+        JOIN checklist_template ct ON mt.machine_type_id = ct.machine_type_id
+        LEFT JOIN users u ON ct.approver_id = u.user_id
+        WHERE m.machine_id = $1
+        LIMIT 1;
+      `;
+
+      const detailRes = await pool.query(getDetailQuery, [machine_id]);
+      const info = detailRes.rows[0] || {};
+
+      // Gọi hàm gửi Email
+      if (info.approver_email) {
+        sendTicketEmail(info.approver_email, {
+          machine_code: info.machine_code,
+          machine_name: info.machine_name,
+          line_no: info.line_no,
+          reporter_name,
+          issue_description,
+          priority: priority || "NORMAL",
+        });
+      }
+    } catch (bgErr) {
+      console.error("Lỗi gửi email chạy ngầm:", bgErr.message);
+    }
   } catch (err) {
     console.error("Lỗi tạo ticket sự cố:", err.message);
     res.status(500).json({ error: "Lỗi hệ thống khi gửi yêu cầu hỗ trợ!" });
@@ -88,7 +185,7 @@ const getTickets = async (req, res) => {
   } catch (err) {
     console.error(
       "Lỗi lấy danh sách ticket theo người phụ trách:",
-      err.message
+      err.message,
     );
     res.status(500).json({ error: "Lỗi hệ thống khi lấy danh sách yêu cầu!" });
   }
