@@ -149,6 +149,7 @@
     "pending": "Pending",
     "processing": "Processing",
     "handle": "Handle",
+    "time": "Timer",
 
     "ticket_detail": "Issue Details",
     "device": "Device/Machine",

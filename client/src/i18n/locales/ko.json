@@ -150,6 +150,7 @@
     "pending": "대기중",
     "processing": "조치중",
     "handle": "조치",
+    "time": "시간",
 
     "ticket_detail": "문제 상세 내용",
     "device": "설비명",

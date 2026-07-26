@@ -51,7 +51,6 @@ const MaintenanceManagement = () => {
           Authorization: `Bearer ${token}`, // Gửi kèm token để Backend nhận diện ai đang đăng nhập
         },
       });
-
       setTickets(res.data.tickets);
     } catch (err) {
       toast.error("Không thể tải danh sách yêu cầu của bạn!");
@@ -196,8 +195,14 @@ const MaintenanceManagement = () => {
                   <TableCell
                     sx={{ fontWeight: "bold", color: "#64748b", py: 2 }}
                   >
+                    {t(`maintenance.time`)}
+                  </TableCell>
+                  <TableCell
+                    sx={{ fontWeight: "bold", color: "#64748b", py: 2 }}
+                  >
                     {t(`maintenance.status`)}
                   </TableCell>
+
                   <TableCell
                     sx={{ fontWeight: "bold", color: "#64748b", py: 2 }}
                     align="right"
@@ -243,6 +248,18 @@ const MaintenanceManagement = () => {
                         {m.issue_description}
                       </TableCell>
                       <TableCell>{getPriorityBadge(m.priority)}</TableCell>
+                      <TableCell>
+                        {m.created_at
+                          ? new Date(m.created_at).toLocaleString("vi-VN", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              second: "2-digit",
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            })
+                          : "N/A"}
+                      </TableCell>
                       <TableCell>
                         <Chip
                           label={style.label}
