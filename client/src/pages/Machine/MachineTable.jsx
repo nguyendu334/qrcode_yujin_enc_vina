@@ -42,6 +42,7 @@ export default function MachineTable({
             <TableCell align="center">{t("machineTable.area")}</TableCell>
             <TableCell align="center">{t("machineTable.line")}</TableCell>
             <TableCell align="center">{t("machineTable.type")}</TableCell>
+            <TableCell align="center">{t("machineTable.admin")}</TableCell>
             <TableCell align="center">{t("machineTable.active")}</TableCell>
             <TableCell align="center">{t("user.action")}</TableCell>
             <TableCell align="center">{t("machineTable.qrcode")}</TableCell>
@@ -64,6 +65,8 @@ export default function MachineTable({
               </TableCell>
 
               <TableCell align="center">{machine.machine_type_name}</TableCell>
+              <TableCell align="center">{machine.approver_name}</TableCell>
+              
 
               <TableCell align="center">
                 <Chip

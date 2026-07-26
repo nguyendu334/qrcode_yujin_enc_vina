@@ -21,7 +21,8 @@
     "qrcode": "QR CODE",
     "categorymachine": "Danh mục thiết bị",
     "manage": "Quản lý danh sách máy móc trong nhà xưởng",
-    "addmachine": "Thêm máy mới"
+    "addmachine": "Thêm máy mới",
+    "admin": "Người phụ trách"
   },
   "area": {
     "Văn phòng": "Văn phòng",

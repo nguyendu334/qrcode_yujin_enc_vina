@@ -22,7 +22,8 @@
     "categorymachine": "공장 설비 목록",
     "manage": "공장 내 설비 목록을 관리하고 생산 라인을 배정합니다",
     "addmachine": "설비 추가",
-    "search": "검색 ......"
+    "search": "검색 ......",
+    "admin": "담당자"
   },
   "area": {
     "Văn phòng": "사무실",

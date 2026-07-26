@@ -35,6 +35,7 @@ export default function MachinePage() {
       setLoading(true);
 
       const data = await getMachines();
+      console.log(data)
 
       setMachines(data);
     } catch (err) {

@@ -13,10 +13,13 @@ const getMachines = async (req, res) => {
           m.area_id,
           m.machine_type_id,
           a.area_name,
-          t.machine_type_name
+          t.machine_type_name,
+          u.full_name AS approver_name
         FROM machine m
         LEFT JOIN area a ON m.area_id = a.area_id
         LEFT JOIN machine_type t ON m.machine_type_id = t.machine_type_id
+        LEFT JOIN checklist_template ct ON m.machine_type_id = ct.machine_type_id
+        LEFT JOIN users u ON ct.approver_id = u.user_id
         ORDER BY m.machine_code ASC;
       `);
     res.json(rows);
