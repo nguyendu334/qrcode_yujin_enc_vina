@@ -25,6 +25,18 @@
     "search": "검색 ......",
     "admin": "담당자"
   },
+  "qrcodecard": {
+    "qrcode": "QR 코드",
+    "info": "상세 정보",
+    "des": "체크시트 점검용 설비 정보입니다.",
+    "code": "설비 코드",
+    "name": "설비명",
+    "area": "구역",
+    "type": "설비 유형",
+    "active": "사용 여부",
+    "admin": "담당자",
+    "status": "상태"
+  },
   "area": {
     "Văn phòng": "사무실",
     "SMT": "SMT",

@@ -24,6 +24,18 @@
     "addmachine": "Add Machine",
     "admin": "Manager"
   },
+  "qrcodecard": {
+    "qrcode": "QR Code",
+    "info": "Details",
+    "des": "Device information used for Checksheet inspection.",
+    "code": "Machine Code",
+    "name": "Machine Name",
+    "area": "Area",
+    "type": "Machine Type",
+    "active": "Active Status",
+    "admin": "Person in Charge",
+    "status": "Status"
+  },
   "area": {
     "Văn phòng": "OFFICE",
     "SMT": "SMT",

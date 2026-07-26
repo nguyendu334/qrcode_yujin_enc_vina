@@ -24,6 +24,18 @@
     "addmachine": "Thêm máy mới",
     "admin": "Người phụ trách"
   },
+  "qrcodecard": {
+    "qrcode": "Mã QR",
+    "info": "Thông tin chi tiết",
+    "des": "Thông tin thiết bị dùng để kiểm tra Checksheet.",
+    "code": "Mã máy",
+    "name": "Tên máy",
+    "area": "Khu vực",
+    "type": "Loại máy",
+    "active": "Hoạt động",
+    "admin": "Người phụ trách",
+    "status": "Trạng thái"
+  },
   "area": {
     "Văn phòng": "Văn phòng",
     "SMT": "SMT",

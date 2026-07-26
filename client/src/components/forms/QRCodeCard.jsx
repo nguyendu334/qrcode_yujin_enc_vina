@@ -9,6 +9,8 @@ import {
   Stack,
 } from "@mui/material";
 
+import { useTranslation } from "react-i18next";
+
 import {
   Download,
   Print,
@@ -21,6 +23,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { toast } from "react-toastify";
 
 export default function QRCodeCard({ machine }) {
+  const { t } = useTranslation();
   if (!machine) return null;
 
   const qrUrl = `${window.location.origin}/machine-menu?machine=${machine.machine_id}`;
@@ -107,7 +110,7 @@ export default function QRCodeCard({ machine }) {
             fontSize: 22,
           }}
         >
-          QR Code Checksheet
+          {t("qrcodecard.qrcode")}
         </Typography>
       </Box>
 
@@ -201,7 +204,7 @@ export default function QRCodeCard({ machine }) {
               fontSize: 24,
             }}
           >
-            Machine Information
+            {t("qrcodecard.info")}
           </Typography>
 
           <Typography
@@ -210,7 +213,7 @@ export default function QRCodeCard({ machine }) {
               marginBottom: "10px",
             }}
           >
-            Thông tin thiết bị dùng để kiểm tra Checksheet.
+            {t("qrcodecard.des")}
           </Typography>
 
           <Paper
@@ -221,25 +224,25 @@ export default function QRCodeCard({ machine }) {
             }}
           >
             <InfoRow
-              label="Mã máy:"
+              label={t("qrcodecard.code")}
               value={
                 <Typography fontWeight={700}>{machine.machine_code}</Typography>
               }
             />
 
             <InfoRow
-              label="Tên máy:"
+              label={t("qrcodecard.name")}
               value={
                 <Typography fontWeight={600}>{machine.machine_name}</Typography>
               }
             />
 
-            <InfoRow label="Khu vực:" value={machine.area_name} />
+            <InfoRow label={t("qrcodecard.area")} value={machine.area_name} />
 
-            <InfoRow label="Line:" value={machine.line_no} />
+            <InfoRow label={t("qrcodecard.admin")} value={machine.approver_name} />
 
             <InfoRow
-              label="Loại máy:"
+              label={t("qrcodecard.type")}
               value={
                 <Chip
                   label={machine.machine_type_name}
@@ -250,7 +253,7 @@ export default function QRCodeCard({ machine }) {
             />
 
             <InfoRow
-              label="Trạng thái:"
+              label={t("qrcodecard.status")}
               value={
                 machine.active ? (
                   <Chip color="success" icon={<CheckCircle />} label="Active" />
