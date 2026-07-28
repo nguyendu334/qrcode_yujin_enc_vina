@@ -1,4 +1,5 @@
 const { pool } = require("../config/db");
+const { sendChecksheetEmail } = require("../services/emailService");
 
 // API lấy Checksheet theo mã máy
 const getCheckSheet = async (req, res) => {
@@ -80,7 +81,7 @@ const checkDuplicateChecksheet = async (req, res) => {
     const checkDate = new Date(date).toISOString().split("T")[0];
     const result = await pool.query(
       `SELECT 1 FROM inspection_header WHERE machine_id = $1 AND DATE(inspection_date) = $2 LIMIT 1`,
-      [machine_id, checkDate]
+      [machine_id, checkDate],
     );
 
     // Trả về true nếu đã check, false nếu chưa check
@@ -173,6 +174,35 @@ const sendInfoCheckSheet = async (req, res) => {
         valueField,
         remarkField,
       ]);
+    }
+
+    // 3. LẤY EMAIL NGƯỜI DUYỆT & TÊN MÁY ĐỂ GỬI MAIL (TRONG TRANSACTION)
+    // Thay tên bảng/cột 'users' và 'machines' cho đúng với DB của bạn
+    const infoQuery = `
+      SELECT 
+        (SELECT email FROM users WHERE user_id = $1) AS approver_email,
+        (SELECT machine_name FROM machine WHERE machine_id = $2) AS machine_name
+    `;
+    const infoResult = await client.query(infoQuery, [approver_id, machine_id]);
+    const approverEmail = infoResult.rows[0]?.approver_email;
+    const machineName = infoResult.rows[0]?.machine_name || machine_id;
+
+    // Xác nhận lưu toàn bộ thay đổi vào Database
+    await client.query("COMMIT");
+
+    // 4. GỬI MAIL NGẦM (SAU KHI COMMIT THÀNH CÔNG)
+    // Không dùng await ở đây để API trả về kết quả cho web ngay lập tức không bị xoay chờ
+    if (approverEmail) {
+      sendChecksheetEmail(approverEmail, {
+        machine_id,
+        machine_name: machineName,
+        inspector,
+        inspection_date: checkDate,
+        shift,
+        check_results,
+      }).catch((err) =>
+        console.error("❌ Lỗi khi gửi email thông báo ngầm:", err.message),
+      );
     }
 
     // Xác nhận lưu toàn bộ thay đổi thành công vào Database

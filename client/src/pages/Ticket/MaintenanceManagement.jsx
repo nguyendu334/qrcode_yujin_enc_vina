@@ -79,7 +79,7 @@ const MaintenanceManagement = () => {
       fetchTickets(); // Tải lại danh sách mới nhất
     } catch (err) {
       toast.error(
-        "Cập nhật thất bại: " + (err.response?.data?.error || err.message)
+        "Cập nhật thất bại: " + (err.response?.data?.error || err.message),
       );
     }
   };
@@ -167,11 +167,11 @@ const MaintenanceManagement = () => {
             <Table sx={{ minWidth: 650 }}>
               <TableHead sx={{ backgroundColor: "#f8fafc" }}>
                 <TableRow sx={{ borderBottom: "2px solid #e2e8f0" }}>
-                  <TableCell
+                  {/* <TableCell
                     sx={{ fontWeight: "bold", color: "#64748b", py: 2 }}
                   >
                     {t(`maintenance.machinecode`)}
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell
                     sx={{ fontWeight: "bold", color: "#64748b", py: 2 }}
                   >
@@ -226,9 +226,9 @@ const MaintenanceManagement = () => {
                         "&:last-child td, &:last-child th": { border: 0 },
                       }}
                     >
-                      <TableCell sx={{ fontWeight: "bold", color: "#1e293b" }}>
+                      {/* <TableCell sx={{ fontWeight: "bold", color: "#1e293b" }}>
                         {m.machine_code}
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell sx={{ color: "#334155" }}>
                         {m.machine_name}
                       </TableCell>
@@ -277,8 +277,9 @@ const MaintenanceManagement = () => {
                         <Button
                           variant={isSelected ? "contained" : "outlined"}
                           size="small"
-                          color="primary"
+                          color={m.status === "CLOSED" ? "inherit" : "primary"}
                           startIcon={<ViewIcon />}
+                          disabled={m.status === "CLOSED"} // Khóa nút khi trạng thái là CLOSED
                           onClick={() => {
                             setSelectedTicket(m);
                             setAssignedTo(m.assigned_to || "");
@@ -288,9 +289,17 @@ const MaintenanceManagement = () => {
                             textTransform: "none",
                             borderRadius: "6px",
                             fontWeight: "bold",
+                            // Custom style mờ xám đẹp mắt khi bị khóa
+                            "&.Mui-disabled": {
+                              backgroundColor: "#f1f5f9",
+                              color: "#94a3b8",
+                              borderColor: "#cbd5e1",
+                            },
                           }}
                         >
-                          {t(`maintenance.handle`)}
+                          {m.status === "CLOSED"
+                            ? t(`maintenance.close`)
+                            : t(`maintenance.handle`)}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -438,7 +447,7 @@ const MaintenanceManagement = () => {
                       onClick={() =>
                         handleUpdateStatus(
                           selectedTicket.ticket_id,
-                          "PROCESSING"
+                          "PROCESSING",
                         )
                       }
                       sx={{

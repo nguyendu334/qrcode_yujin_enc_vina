@@ -11,11 +11,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-/**
- * Hàm gửi email thông báo sự cố
- * @param {string} toEmail - Email người nhận (Lấy từ DB)
- * @param {Object} ticketInfo - Thông tin chi tiết sự cố
- */
 async function sendTicketEmail(toEmail, ticketInfo) {
   if (!toEmail) {
     console.warn("⚠️ Không tìm thấy Email người nhận, bỏ qua gửi Email.");
@@ -79,4 +74,58 @@ async function sendTicketEmail(toEmail, ticketInfo) {
   }
 }
 
-module.exports = { sendTicketEmail };
+// Send checksheet result email
+async function sendChecksheetEmail(toEmail, data) {
+  if (!toEmail) return;
+
+  // Kiểm tra xem bài checksheet có mục nào bị NG không
+  const hasNG = data.check_results.some(
+    (item) => item.result && item.result.toUpperCase() === "NG",
+  );
+  const statusBadge = hasNG
+    ? '<span style="color: #ef4444; font-weight: bold;">⚠️ BẤT THƯỜNG (NG)</span>'
+    : '<span style="color: #10b981; font-weight: bold;">✅ BÌNH THƯỜNG (OK)</span>';
+
+  const mailOptions = {
+    from: `"Hệ Thống Checksheet" <${process.env.EMAIL_USER}>`,
+    to: toEmail,
+    subject: `[CHECKSHEET] Phiếu kiểm tra mới máy ${data.machine_name || data.machine_id} - Ca ${data.shift}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 0 auto;">
+        <h2 style="color: #2563eb; margin-top: 0;">📋 THÔNG BÁO NỘP PHIẾU CHECKSHEET</h2>
+        <p>Xin chào, hệ thống vừa nhận được một phiếu kiểm tra thiết bị mới cần xác nhận:</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin: 15px 0; background-color: #f8fafc;">
+          <tr>
+            <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold; width: 35%;">Mã thiết bị:</td>
+            <td style="padding: 10px; border: 1px solid #e2e8f0;">${data.machine_name || data.machine_id}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">Người kiểm tra:</td>
+            <td style="padding: 10px; border: 1px solid #e2e8f0;">${data.inspector}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">Ca làm việc:</td>
+            <td style="padding: 10px; border: 1px solid #e2e8f0;">Ca ${data.shift}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">Ngày kiểm tra:</td>
+            <td style="padding: 10px; border: 1px solid #e2e8f0;">${data.inspection_date}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">Đánh giá tổng quan:</td>
+            <td style="padding: 10px; border: 1px solid #e2e8f0;">${statusBadge}</td>
+          </tr>
+        </table>
+
+        <p>Vui lòng truy cập hệ thống để xem chi tiết kết quả kiểm tra và phê duyệt.</p>
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+        <p style="font-size: 12px; color: #64748b; text-align: center;">Email tự động từ hệ thống quản lý thiết bị.</p>
+      </div>
+    `,
+  };
+
+  return transporter.sendMail(mailOptions);
+}
+
+module.exports = { sendTicketEmail, sendChecksheetEmail };
