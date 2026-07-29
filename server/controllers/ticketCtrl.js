@@ -33,7 +33,7 @@ const createTicket = async (req, res) => {
       ticket_id: result.rows[0].ticket_id,
     });
 
-// Send Teams
+    // Send Teams
     // try {
     //   const getDetailQuery = `
     //     SELECT
@@ -69,7 +69,7 @@ const createTicket = async (req, res) => {
     //   console.error("Lỗi lấy thông tin máy gửi Teams:", bgErr.message);
     // }
 
-// Webhook
+    // Webhook
     // try {
     //   const getDetailQuery = `
     //     SELECT machine_code, machine_name, line_no
@@ -94,10 +94,10 @@ const createTicket = async (req, res) => {
     //   console.error("Lỗi lấy thông tin máy gửi Webhook:", bgErr.message);
     // }
 
-// Send mail
+    // Send mail
     try {
       const getDetailQuery = `
-        SELECT 
+        SELECT
           m.machine_code,
           m.machine_name,
           m.line_no,

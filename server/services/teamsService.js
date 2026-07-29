@@ -1,6 +1,5 @@
 const axios = require("axios");
 
-
 // teams
 async function sendDirectTeamsMessage(approverEmail, ticketInfo) {
   if (!approverEmail) {
@@ -43,7 +42,7 @@ async function sendDirectTeamsMessage(approverEmail, ticketInfo) {
     const senderUserId = senderRes.data.id;
     const recipientUserId = recipientRes.data.id;
 
-    // 3. Mở/Tạo cuộc trò chuyện 1:1 (ĐỦ 2 MEMBERS)
+    // 3. Mở/Tạo cuộc trò chuyện 1:1
     const chatRes = await axios.post(
       "https://graph.microsoft.com/v1.0/chats",
       {
@@ -64,27 +63,37 @@ async function sendDirectTeamsMessage(approverEmail, ticketInfo) {
       { headers: { Authorization: `Bearer ${token}` } },
     );
 
-    // 4. Bắn tin nhắn trực tiếp
+    const chatId = chatRes.data.id;
+
+    // 4. Bắn Activity Notification (Đã sửa đúng định dạng topic.value)
     await axios.post(
-      `https://graph.microsoft.com/v1.0/chats/${chatRes.data.id}/messages`,
+      `https://graph.microsoft.com/v1.0/users/${recipientUserId}/teamwork/sendActivityNotification`,
       {
-        body: {
-          contentType: "html",
-          content: `
-            <div style="border-left: 4px solid #ef4444; padding-left: 12px; font-family: sans-serif;">
-              <h3 style="color: #ef4444; margin-top:0;">🚨 BÁO CÁO SỰ CỐ MỚI</h3>
-              <p><b>Mã máy:</b> ${ticketInfo.machine_code || "N/A"}</p>
-              <p><b>Tên máy:</b> ${ticketInfo.machine_name || "N/A"} (${ticketInfo.line_no || "N/A"})</p>
-              <p><b>Người báo:</b> ${ticketInfo.reporter_name}</p>
-              <p><b>Mức độ:</b> <b style="color: red;">${ticketInfo.priority}</b></p>
-              <p><b>Mô tả lỗi:</b> ${ticketInfo.issue_description}</p>
-              <p><i>Vui lòng truy cập hệ thống để tiếp nhận xử lý!</i></p>
-            </div>
-          `,
+        topic: {
+          source: "text",
+          value: `🚨 BÁO CÁO SỰ CỐ MỚI: Máy ${ticketInfo.machine_code || ""}`,
+          // SỬA DÒNG NÀY: Dùng Teams Deep Link chuẩn bắt đầu bằng https://teams.microsoft.com/l/
+          webUrl: `https://teams.microsoft.com/l/chat/${chatId}/0?users=${recipientUserId}`,
+        },
+        activityType: "userMention",
+        previewText: {
+          content: `Người báo: ${ticketInfo.reporter_name || "N/A"} - Mức độ: ${ticketInfo.priority || "NORMAL"}`,
+        },
+        templateParameters: [
+          {
+            name: "taskId",
+            value: ticketInfo.machine_code || "N/A",
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
       },
-      { headers: { Authorization: `Bearer ${token}` } },
     );
+
 
     console.log(
       `✅ [Teams Service] Đã gửi tin nhắn riêng tới: ${approverEmail}`,

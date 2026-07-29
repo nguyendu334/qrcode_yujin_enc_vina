@@ -66,9 +66,9 @@ async function sendTicketEmail(toEmail, ticketInfo) {
 
     // 3. Tiến hành gửi mail
     const info = await transporter.sendMail(mailOptions);
-    console.log(
-      `✅ [Email Service] Đã gửi mail thành công tới: ${toEmail} (ID: ${info.messageId})`,
-    );
+    // console.log(
+    //   `✅ [Email Service] Đã gửi mail thành công tới: ${toEmail}`,
+    // );
   } catch (err) {
     console.error("❌ [Email Service] Lỗi gửi Email:", err.message);
   }
