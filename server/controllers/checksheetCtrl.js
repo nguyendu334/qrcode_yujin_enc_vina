@@ -70,21 +70,30 @@ const getCheckSheet = async (req, res) => {
 };
 
 const checkDuplicateChecksheet = async (req, res) => {
-  const { machine_id, date } = req.query;
-  if (!machine_id || !date) {
+  // Lấy thêm shift từ Frontend truyền lên
+  const { machine_id, date, shift } = req.query;
+
+  if (!machine_id || !date || !shift) {
     return res
       .status(400)
-      .json({ error: "Thiếu machine_id hoặc date để kiểm tra!" });
+      .json({ error: "Thiếu machine_id, date hoặc shift để kiểm tra!" });
   }
 
   try {
     const checkDate = new Date(date).toISOString().split("T")[0];
+
+    // Thêm điều kiện AND shift = $3
     const result = await pool.query(
-      `SELECT 1 FROM inspection_header WHERE machine_id = $1 AND DATE(inspection_date) = $2 LIMIT 1`,
-      [machine_id, checkDate],
+      `SELECT 1 
+       FROM inspection_header 
+       WHERE machine_id = $1 
+         AND DATE(inspection_date) = $2 
+         AND shift = $3 
+       LIMIT 1`,
+      [machine_id, checkDate, shift.trim()],
     );
 
-    // Trả về true nếu đã check, false nếu chưa check
+    // Trả về true nếu máy + ngày + ca đó đã được check
     res.json({ isDuplicate: result.rows.length > 0 });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -114,29 +123,33 @@ const sendInfoCheckSheet = async (req, res) => {
   try {
     const checkDate = new Date(inspection_date).toISOString().split("T")[0];
 
+    // 1. ĐÃ SỬA: Kiểm tra trùng theo machine_id + date + shift (Ca làm việc)
     const duplicateCheckQuery = `
       SELECT inspection_id 
       FROM inspection_header 
-      WHERE machine_id = $1 AND DATE(inspection_date) = $2
+      WHERE machine_id = $1 
+        AND DATE(inspection_date) = $2 
+        AND shift = $3
       LIMIT 1;
     `;
     const duplicateResult = await client.query(duplicateCheckQuery, [
       machine_id,
       checkDate,
+      shift,
     ]);
 
-    // Nếu đã tồn tại bản ghi trong ngày, chặn ngay lập tức và trả về lỗi
+    // Nếu đã tồn tại bản ghi của ca này trong ngày, chặn ngay lập tức
     if (duplicateResult.rows.length > 0) {
-      client.release(); // Giải phóng luôn kết nối
+      client.release(); // Giải phóng kết nối
       return res.status(400).json({
-        error: `Thiết bị này đã được tạo phiếu kiểm tra vào ngày ${checkDate} rồi! Không thể kiểm tra thêm lần nữa.`,
+        error: `Thiết bị này đã được tạo phiếu kiểm tra vào ngày ${checkDate} (${shift}) rồi! Không thể kiểm tra thêm lần nữa.`,
       });
     }
 
     // Bắt đầu Transaction
     await client.query("BEGIN");
 
-    // 1. Thêm bản ghi vào bảng inspection_header theo cấu trúc hình image_0f4417.png
+    // 2. Thêm bản ghi vào bảng inspection_header
     const headerQuery = `
         INSERT INTO inspection_header (machine_id, inspector, inspection_date, shift, approver_id)
         VALUES ($1, $2, timezone('Asia/Ho_Chi_Minh', $3::timestamptz), $4, $5)
@@ -145,28 +158,25 @@ const sendInfoCheckSheet = async (req, res) => {
     const headerResult = await client.query(headerQuery, [
       machine_id,
       inspector,
-      inspection_date, // Chuỗi định dạng ngày giờ gửi từ Frontend
+      inspection_date,
       shift,
       approver_id,
     ]);
 
     const inspectionId = headerResult.rows[0].inspection_id;
 
-    // 2. Duyệt qua danh sách kết quả các item để thêm vào inspection_detail theo hình image_0f4436.png
+    // 3. Thêm chi tiết kiểm tra vào inspection_detail
     const detailQuery = `
       INSERT INTO inspection_detail (inspection_id, item_id, result, value, remark)
       VALUES ($1, $2, $3, $4, $5);
     `;
 
-    // Vì check_results gửi lên giờ là MẢNG: [ { item_id, result, value }, ... ]
     for (const itemData of check_results) {
-      // Lấy trực tiếp giá trị đã tách biệt từ frontend, remark mặc định là null hoặc chuỗi rỗng
       const itemId = parseInt(itemData.item_id, 10);
-      const resultField = itemData.result; // Nhận chuẩn giá trị (ví dụ: 'OK', 'NG' hoặc null)
-      const valueField = itemData.value; // Nhận chuẩn giá trị (ví dụ: '0.5', '200' hoặc null)
-      const remarkField = itemData.remark || null; // Nếu có remark thì lưu, không thì để null
+      const resultField = itemData.result;
+      const valueField = itemData.value;
+      const remarkField = itemData.remark || null;
 
-      // Thực thi lưu từng dòng hạng mục chi tiết vào database
       await client.query(detailQuery, [
         inspectionId,
         itemId,
@@ -176,8 +186,7 @@ const sendInfoCheckSheet = async (req, res) => {
       ]);
     }
 
-    // 3. LẤY EMAIL NGƯỜI DUYỆT & TÊN MÁY ĐỂ GỬI MAIL (TRONG TRANSACTION)
-    // Thay tên bảng/cột 'users' và 'machines' cho đúng với DB của bạn
+    // 4. LẤY EMAIL NGƯỜI DUYỆT & TÊN MÁY ĐỂ GỬI MAIL
     const infoQuery = `
       SELECT 
         (SELECT email FROM users WHERE user_id = $1) AS approver_email,
@@ -187,11 +196,10 @@ const sendInfoCheckSheet = async (req, res) => {
     const approverEmail = infoResult.rows[0]?.approver_email;
     const machineName = infoResult.rows[0]?.machine_name || machine_id;
 
-    // Xác nhận lưu toàn bộ thay đổi vào Database
+    // Xác nhận lưu toàn bộ thay đổi vào Database (CHỈ GỌI 1 LẦN)
     await client.query("COMMIT");
 
-    // 4. GỬI MAIL NGẦM (SAU KHI COMMIT THÀNH CÔNG)
-    // Không dùng await ở đây để API trả về kết quả cho web ngay lập tức không bị xoay chờ
+    // 5. GỬI MAIL NGẦM (SAU KHI COMMIT THÀNH CÔNG)
     if (approverEmail) {
       sendChecksheetEmail(approverEmail, {
         machine_id,
@@ -205,22 +213,21 @@ const sendInfoCheckSheet = async (req, res) => {
       );
     }
 
-    // Xác nhận lưu toàn bộ thay đổi thành công vào Database
-    await client.query("COMMIT");
+    // Trả kết quả thành công về cho client
     res.status(201).json({
       success: true,
       message: "Lưu bảng kiểm tra thành công!",
       inspection_id: inspectionId,
     });
   } catch (err) {
-    // Hoàn tác dữ liệu nếu có bất kỳ lỗi nào xảy ra để tránh rác DB
+    // Hoàn tác dữ liệu nếu có lỗi
     await client.query("ROLLBACK");
     console.error("Lỗi khi thực thi lưu Transaction Checksheet:", err.message);
     res
       .status(500)
       .json({ error: "Lỗi hệ thống khi lưu kết quả kiểm tra: " + err.message });
   } finally {
-    // Giải phóng kết nối ngược lại vào Pool
+    // Giải phóng kết nối
     client.release();
   }
 };

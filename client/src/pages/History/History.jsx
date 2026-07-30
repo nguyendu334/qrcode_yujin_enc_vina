@@ -37,7 +37,7 @@ export default function InspectionHistory() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // 1. FETCH DANH SÁCH MÁY DÙNG FILE HELPER
+  // 1. FETCH DANH SÁCH MÁY
   useEffect(() => {
     getMachines()
       .then((res) => {
@@ -45,6 +45,33 @@ export default function InspectionHistory() {
       })
       .catch((err) => console.error("Lỗi lấy danh mục máy:", err));
   }, []);
+
+  // 3. FETCH CHI TIẾT KHI CLICK DÒNG (Định nghĩa trước fetchHeaders)
+  const handleSelectHeader = useCallback(
+    async (inspectionId, headersList = headers) => {
+      if (!inspectionId) return;
+      setSelectedInspectionId(inspectionId);
+
+      // Tìm thông tin header tương ứng để lấy approver_id
+      const selectedHeader = headersList.find(
+        (h) => (h.inspection_id || h.id) === inspectionId
+      );
+
+      if (selectedHeader) {
+        setCurrentApproverId(selectedHeader.approver_id);
+      }
+
+      try {
+        const response = await getInspectionDetail(inspectionId);
+        if (response.success) {
+          setDetails(response.data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi fetch chi tiết:", error);
+      }
+    },
+    [headers]
+  );
 
   // 2. FETCH HEADERS DÙNG FILE HELPER
   const fetchHeaders = useCallback(async () => {
@@ -66,49 +93,25 @@ export default function InspectionHistory() {
         const dataHeaders = response.data;
         setHeaders(dataHeaders);
         setCurrentPage(1); // Reset về trang 1
-        // Tự động kích hoạt chi tiết dòng đầu tiên nếu có dữ liệu
+
+        // Tự động chọn dòng đầu tiên nếu có dữ liệu
         if (dataHeaders.length > 0) {
-          // Sử dụng thuộc tính inspection_id từ DB hoặc trường id tương ứng được map
           const firstId = dataHeaders[0].inspection_id || dataHeaders[0].id;
-          handleSelectHeader(firstId);
+          handleSelectHeader(firstId, dataHeaders);
         } else {
           setDetails([]);
           setSelectedInspectionId(null);
+          setCurrentApproverId(null);
         }
       }
     } catch (error) {
       console.error("Lỗi khi fetch headers:", error);
     }
-  }, [filters]);
+  }, [filters, handleSelectHeader]);
 
   useEffect(() => {
     fetchHeaders();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // 3. FETCH CHI TIẾT KHI CLICK DÒNG
-  const handleSelectHeader = async (inspectionId) => {
-    if (!inspectionId) return;
-    setSelectedInspectionId(inspectionId);
-
-    const selectedHeader = headers.find(
-      (h) => (h.inspection_id || h.id) === inspectionId
-    );
-
-    if (selectedHeader) {
-      setCurrentApproverId(selectedHeader.approver_id); // Lưu lại ID người duyệt của phiếu này
-      console.log(currentApproverId);
-    }
-
-    try {
-      const response = await getInspectionDetail(inspectionId);
-      if (response.success) {
-        setDetails(response.data);
-      }
-    } catch (error) {
-      console.error("Lỗi khi fetch chi tiết:", error);
-    }
-  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -120,38 +123,41 @@ export default function InspectionHistory() {
     setTimeout(() => fetchHeaders(), 50);
   };
 
-  // LOGIC TÍNH TOÁN NGẮT DÒNG PHÂN TRANG (Mỗi trang hiển thị tối đa 5 dòng như hình image_1d69a7.png)
+  // TÍNH TOÁN PHÂN TRANG (Mỗi trang 5 dòng)
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentHeaders = headers.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(headers.length / itemsPerPage) || 1;
 
-  // 2. 🌟 HÀM XỬ LÝ GỌI API PHÊ DUYỆT / TỪ CHỐI
+  // 4. HÀM XỬ LÝ GỌI API PHÊ DUYỆT / TỪ CHỐI
   const handleApproveAction = async (statusAction) => {
-    // Lấy dòng đầu tiên để biết được inspection_id đang xem
-    const currentInspectionId = details[0]?.inspection_id;
-    if (!currentInspectionId) return;
+    if (!selectedInspectionId) {
+      toast.warning("Vui lòng chọn phiếu kiểm tra!");
+      return;
+    }
 
     try {
-      const token = localStorage.getItem("token"); // Lấy token đăng nhập
+      const token = localStorage.getItem("token");
       await updateApprove(
-        currentInspectionId,
+        selectedInspectionId,
         {
           status: statusAction, // 'approved' hoặc 'rejected'
-          comment: approvalComment, // Nội dung ghi chú từ ô textarea
+          comment: approvalComment,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      toast.success("Done!");
-      setApprovalComment(""); // Xóa trắng ô nhập chữ sau khi bấm thành công
+      toast.success(
+        statusAction === "approved"
+          ? "Phê duyệt thành công!"
+          : "Đã từ chối phiếu kiểm tra!"
+      );
+      setApprovalComment(""); // Clear comment box
 
-      // 🔥 Gọi hàm tải lại dữ liệu lập tức để giao diện đổi màu sắc mới luôn
-      if (typeof fetchHeaders === "function") fetchHeaders();
-      if (typeof handleSelectHeader === "function")
-        handleSelectHeader(currentInspectionId);
+      // Refresh lại dữ liệu
+      await fetchHeaders();
     } catch (error) {
       toast.error(
         "Có lỗi xảy ra: " + (error.response?.data?.error || error.message)
@@ -167,19 +173,12 @@ export default function InspectionHistory() {
         gap: "24px",
       }}
     >
-      <Paper
-        sx={{
-          p: 2,
-          mb: 3,
-          borderRadius: 4,
-        }}
-      >
+      <Paper sx={{ p: 2, mb: 1, borderRadius: 4 }}>
         <Typography variant="h5">{t(`history.title`)}</Typography>
-
         <Typography color="text.secondary">{t(`history.content`)}</Typography>
       </Paper>
 
-      {/* KHU VỰC BỘ LỌC TÌM KIẾM */}
+      {/* BỘ LỌC TÌM KIẾM */}
       <FormSearch
         handleSearch={handleSearch}
         t={t}
@@ -189,7 +188,7 @@ export default function InspectionHistory() {
         handleReset={handleReset}
       />
 
-      {/* BẢNG 1: INSPECTION HEADER (CHỈ HIỂN THỊ TỐI ĐA 5 DÒNG) */}
+      {/* BẢNG 1: INSPECTION HEADER */}
       <InspectionHeader
         t={t}
         headers={headers}
@@ -197,7 +196,7 @@ export default function InspectionHistory() {
         setCurrentPage={setCurrentPage}
         totalPages={totalPages}
         currentHeaders={currentHeaders}
-        handleSelectHeader={handleSelectHeader}
+        handleSelectHeader={(id) => handleSelectHeader(id, headers)}
         selectedInspectionId={selectedInspectionId}
       />
 
@@ -207,6 +206,7 @@ export default function InspectionHistory() {
         details={details}
         currentUser={currentUser}
         currentApproverId={currentApproverId}
+        approvalComment={approvalComment}
         setApprovalComment={setApprovalComment}
         handleApproveAction={handleApproveAction}
       />

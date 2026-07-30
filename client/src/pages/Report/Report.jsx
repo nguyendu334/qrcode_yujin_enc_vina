@@ -16,7 +16,7 @@ const Report = () => {
   const [selectedMachine, setSelectedMachine] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("2026-07");
   const [reportData, setReportData] = useState([]);
-  const [approvers, setApprovers] = useState([]); // 🌟 State lưu danh sách người duyệt trong tháng
+  const [approvers, setApprovers] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -51,7 +51,9 @@ const Report = () => {
         params: { machine_id: selectedMachine, year_month: selectedMonth },
       });
       if (res.data.success) {
+        // Nếu Backend chưa gom nhóm sẵn, gọi hàm processMatrixData bên dưới
         processMatrixData(res.data.data);
+        console.log(res.data)
       }
     } catch (error) {
       console.error(error);
@@ -60,7 +62,25 @@ const Report = () => {
     }
   };
 
+  // 🌟 HÀM XỬ LÝ DỮ LIỆU CHUẨN DẠNG 2 CA (NGÀY / ĐÊM)
   const processMatrixData = (rawData) => {
+    // Nếu Backend đã nhóm sẵn dạng Array các item có chứa object 'days', dùng trực tiếp
+    if (
+      rawData.length > 0 &&
+      rawData[0].item_id &&
+      typeof rawData[0].days === "object"
+    ) {
+      const uniqueApprovers = new Set();
+      rawData.forEach((row) => {
+        if (row.approver_name)
+          uniqueApprovers.add(row.approver_name.toUpperCase());
+      });
+      setReportData(rawData);
+      setApprovers(Array.from(uniqueApprovers));
+      return;
+    }
+
+    // Nếu Backend trả về mảng phẳng các bản ghi (Flat Array)
     const matrix = {};
     const uniqueApprovers = new Set();
 
@@ -71,6 +91,7 @@ const Report = () => {
 
       if (!matrix[row.item_id]) {
         matrix[row.item_id] = {
+          item_id: row.item_id,
           item_name: row.item_name,
           standard_value: row.standard_value,
           item_type: row.item_type,
@@ -79,16 +100,37 @@ const Report = () => {
           days: {},
         };
       }
-      matrix[row.item_id].days[row.day_num] =
+
+      const day = row.day_num;
+      if (!matrix[row.item_id].days[day]) {
+        matrix[row.item_id].days[day] = {};
+      }
+
+      const val =
         row.value !== null && row.value !== undefined && row.value !== ""
           ? row.value
           : row.result;
+
+      // Phân tách giá trị cho Ca Ngày & Ca Đêm
+      const shiftStr = String(row.shift || "").toLowerCase();
+      if (
+        shiftStr.includes("ngày") ||
+        shiftStr.includes("day") ||
+        shiftStr === "n"
+      ) {
+        matrix[row.item_id].days[day].day = val;
+      } else {
+        matrix[row.item_id].days[day].night = val;
+      }
     });
 
     setReportData(Object.values(matrix));
     setApprovers(Array.from(uniqueApprovers));
   };
 
+  // ========================================================
+  // 🟢 HÀM XUẤT FILE EXCEL (XUẤT ĐỦ 2 HÀNG / HẠNG MỤC)
+  // ========================================================
   const exportToExcel = () => {
     if (reportData.length === 0) {
       alert("Không có dữ liệu để xuất file Excel!");
@@ -96,13 +138,12 @@ const Report = () => {
     }
 
     const currentMachineObj = machines.find(
-      (m) => m.machine_id.toString() === selectedMachine.toString()
+      (m) => m.machine_id.toString() === selectedMachine.toString(),
     );
     const machineNameDisplay = currentMachineObj
       ? `${currentMachineObj.machine_name} (${currentMachineObj.machine_code})`
       : "Chưa xác định";
 
-    // 1. Khởi tạo cấu trúc mảng hàng
     const excelRows = [
       ["📊 BÁO CÁO TỔNG HỢP CHECKSHEET THEO THÁNG"],
       [],
@@ -120,27 +161,37 @@ const Report = () => {
       "Hạng mục kiểm tra",
       "Tiêu chuẩn",
       "Phân loại",
+      "Ca",
       ...daysArray.map((d) => `${d}`),
     ];
     excelRows.push(tableHeaders);
 
     reportData.forEach((item, index) => {
-      const rowData = [
+      // HÀNG CA NGÀY
+      const dayRow = [
         index + 1,
         item.item_name,
         item.standard_value,
         item.item_type,
+        "Ngày",
       ];
+      // HÀNG CA ĐÊM
+      const nightRow = ["", "", "", "", "Đêm"];
+
       daysArray.forEach((day) => {
-        rowData.push(item.days[day] || "");
+        const dayVal = item.days?.[day]?.day ?? item.days?.[`${day}_N`] ?? "";
+        const nightVal =
+          item.days?.[day]?.night ?? item.days?.[`${day}_Đ`] ?? "";
+        dayRow.push(dayVal);
+        nightRow.push(nightVal);
       });
-      excelRows.push(rowData);
+
+      excelRows.push(dayRow);
+      excelRows.push(nightRow);
     });
 
-    // 2. Tạo worksheet từ dữ liệu phẳng ban đầu
     const worksheet = XLSStyle.utils.aoa_to_sheet(excelRows);
 
-    // 3. Định nghĩa các kiểu Style (Font, Color, Border, Alignment)
     const borderStyle = {
       top: { style: "thin", color: { rgb: "cbd5e1" } },
       bottom: { style: "thin", color: { rgb: "cbd5e1" } },
@@ -148,20 +199,17 @@ const Report = () => {
       right: { style: "thin", color: { rgb: "cbd5e1" } },
     };
 
-    // Duyệt qua từng ô trong Worksheet để gắn style
+    // Format style cho ô
     for (let cellRef in worksheet) {
-      if (cellRef[0] === "!") continue; // Bỏ qua các cấu hình hệ thống của sheet
+      if (cellRef[0] === "!") continue;
 
       const cell = worksheet[cellRef];
-      // Lấy ra tọa độ hàng (Row) và cột (Col) dựa trên tên ô (Ví dụ: A1 -> R:0, C:0)
       const cellAddress = XLSStyle.utils.decode_cell(cellRef);
       const row = cellAddress.r;
       const col = cellAddress.c;
 
-      // Kế thừa hoặc tạo mới object style cho ô
       cell.s = {};
 
-      // 🌟 STYLE HÀNG 1: Tiêu đề lớn
       if (row === 0) {
         cell.s = {
           font: {
@@ -172,40 +220,26 @@ const Report = () => {
           },
           alignment: { vertical: "center" },
         };
-      }
-      // 🌟 STYLE HÀNG 3, 4, 5: Thông tin hành chính
-      else if (row >= 2 && row <= 4) {
+      } else if (row >= 2 && row <= 4) {
         cell.s = {
           font: { name: "Arial", size: 11, bold: col === 0, italic: col === 1 },
           alignment: { vertical: "center" },
         };
-      }
-      // 🌟 STYLE HÀNG 6 (Index số 6): Tiêu đề của bảng dữ liệu (Table Headers)
-      else if (row === 6) {
+      } else if (row === 6) {
         cell.s = {
-          fill: { fgColor: { rgb: "0f172a" } }, // Nền xanh đen đậm cực sang
+          fill: { fgColor: { rgb: "0f172a" } },
           font: {
             name: "Arial",
             size: 10,
             bold: true,
             color: { rgb: "ffffff" },
           },
-          alignment: {
-            horizontal: "center",
-            vertical: "center",
-            wrapText: true,
-          },
+          alignment: { horizontal: "center", vertical: "center" },
           border: borderStyle,
         };
-      }
-      // 🌟 STYLE CÁC HÀNG DỮ LIỆU CÒN LẠI (Thân bài bảng tính)
-      else if (row > 6) {
-        let alignmentStyle = { vertical: "center", horizontal: "center" }; // Mặc định căn giữa cho Số/OK/NG
-
-        // Nếu là cột Tên hạng mục hoặc Tiêu chuẩn thì căn lề trái cho dễ đọc
-        if (col === 1 || col === 2) {
-          alignmentStyle.horizontal = "left";
-        }
+      } else if (row > 6) {
+        let alignmentStyle = { vertical: "center", horizontal: "center" };
+        if (col === 1 || col === 2) alignmentStyle.horizontal = "left";
 
         cell.s = {
           font: { name: "Arial", size: 10 },
@@ -213,8 +247,7 @@ const Report = () => {
           border: borderStyle,
         };
 
-        // Tự động tô màu nền đỏ nhạt cho chữ "NG" để quản lý dễ phát hiện lỗi
-        if (cell.v === "NG" || cell.v === "ng" || cell.v === "X") {
+        if (cell.v === "NG" || cell.v === "X") {
           cell.s.fill = { fgColor: { rgb: "fee2e2" } };
           cell.s.font = {
             name: "Arial",
@@ -222,9 +255,7 @@ const Report = () => {
             bold: true,
             color: { rgb: "b91c1c" },
           };
-        }
-        // Tự động tô màu nền xanh nhạt cho chữ "OK"
-        else if (cell.v === "OK" || cell.v === "ok") {
+        } else if (cell.v === "OK") {
           cell.s.fill = { fgColor: { rgb: "dcfce7" } };
           cell.s.font = {
             name: "Arial",
@@ -236,39 +267,20 @@ const Report = () => {
       }
     }
 
-    // 4. CẤU HÌNH ĐỘ RỘNG CỦA CÁC CỘT (Tránh chữ dài bị đè khuất)
     const colWidths = [
-      { wch: 6 }, // STT
-      { wch: 25 }, // Hạng mục kiểm tra
-      { wch: 18 }, // Tiêu chuẩn
-      { wch: 12 }, // Phân loại
+      { wch: 6 },
+      { wch: 25 },
+      { wch: 18 },
+      { wch: 10 },
+      { wch: 8 },
     ];
-    // Các cột ngày từ 1 đến 31 cho độ rộng nhỏ xinh vừa phải (khoảng 6 ký tự)
-    daysArray.forEach(() => colWidths.push({ wch: 6 }));
+    daysArray.forEach(() => colWidths.push({ wch: 5 }));
     worksheet["!cols"] = colWidths;
 
-    // 5. CẤU HÌNH GỘP Ô (Merge) cho hàng tiêu đề lớn
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
-
-    // 6. CẤU HÌNH ĐỘ CAO CỦA CÁC HÀNG (Giúp bảng thoáng đãng hơn)
-    worksheet["!rows"] = [
-      { hpt: 30 }, // Hàng tiêu đề lớn cao 30pt
-      { hpt: 15 },
-      { hpt: 18 }, // Hàng thông tin hành chính cao 18pt
-      { hpt: 18 },
-      { hpt: 18 },
-      { hpt: 15 },
-      { hpt: 26 }, // Thanh tiêu đề bảng dữ liệu cao 26pt
-    ];
-
-    // 7. Xuất file
     const workbook = XLSStyle.utils.book_new();
     XLSStyle.utils.book_append_sheet(workbook, worksheet, "Báo cáo tháng");
 
-    const fileName = `Bao_Cao_Checksheet_${selectedMonth.replace(
-      "-",
-      "_"
-    )}.xlsx`;
+    const fileName = `Bao_Cao_Checksheet_${selectedMonth.replace("-", "_")}.xlsx`;
     XLSStyle.writeFile(workbook, fileName);
   };
 
@@ -281,39 +293,46 @@ const Report = () => {
       return;
     }
 
-    // Khởi tạo tài liệu PDF dáng Ngang (Landscape - 'l') vì bảng có tới 31 ngày rất rộng
-    const doc = new jsPDF("l", "mm", "a3"); // Dùng khổ A3 để không bị tràn chữ
+    const doc = new jsPDF("l", "mm", "a3");
 
-    // Cấu hình tiêu đề các cột cho PDF
     const headers = [
       [
         "STT",
         "Hạng mục kiểm tra",
         "Tiêu chuẩn",
         "Phân loại",
+        "Ca",
         ...daysArray.map((d) => d.toString()),
       ],
     ];
 
-    // Tạo mảng dữ liệu thân bài
-    const rows = reportData.map((item, index) => {
-      const rowData = [
+    const rows = [];
+    reportData.forEach((item, index) => {
+      const dayRow = [
         index + 1,
         item.item_name,
         item.standard_value,
         item.item_type,
+        "Ngày",
       ];
+      const nightRow = ["", "", "", "", "Đêm"];
+
       daysArray.forEach((day) => {
-        rowData.push(item.days[day] || "");
+        const dayVal = item.days?.[day]?.day ?? item.days?.[`${day}_N`] ?? "";
+        const nightVal =
+          item.days?.[day]?.night ?? item.days?.[`${day}_Đ`] ?? "";
+        dayRow.push(dayVal);
+        nightRow.push(nightVal);
       });
-      return rowData;
+
+      rows.push(dayRow);
+      rows.push(nightRow);
     });
 
-    // Vẽ bảng tự động bằng jspdf-autotable
     doc.text(
       `BAO CAO CHECKSHEET TONG HOP THEO THANG (${selectedMonth})`,
       14,
-      15
+      15,
     );
     if (approvers.length > 0) {
       doc.text(`Nguoi phe duyet: ${approvers.join(", ")}`, 14, 23);
@@ -326,18 +345,16 @@ const Report = () => {
       theme: "grid",
       styles: { fontSize: 8, halign: "center" },
       columnStyles: {
-        1: { halign: "left", fontStyle: "bold" }, // Cột tên hạng mục căn trái
-        2: { halign: "left" }, // Cột tiêu chuẩn căn trái
+        1: { halign: "left", fontStyle: "bold" },
+        2: { halign: "left" },
       },
     });
 
-    const fileName = `Checksheet_Thang_${selectedMonth}.pdf`;
-    doc.save(fileName);
+    doc.save(`Checksheet_Thang_${selectedMonth}.pdf`);
   };
 
   return (
     <Box sx={{ padding: 3, fontFamily: "Segoe UI, sans-serif" }}>
-      {/* TIÊU ĐỀ TRANG */}
       <Typography
         variant="h5"
         component="h2"
@@ -352,7 +369,6 @@ const Report = () => {
         {t(`report.title`)}
       </Typography>
 
-      {/* BỘ LỌC TÌM KIẾM */}
       <ReportSearch
         t={t}
         selectedMachine={selectedMachine}
@@ -368,7 +384,6 @@ const Report = () => {
         approvers={approvers}
       />
 
-      {/* BẢNG MA TRẬN DỮ LIỆU */}
       <TableReport
         t={t}
         reportData={reportData}

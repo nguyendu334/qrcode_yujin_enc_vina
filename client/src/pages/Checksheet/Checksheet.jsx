@@ -44,11 +44,17 @@ function ChecksheetPage() {
     const machineId = searchParams.get("machine");
 
     // Hàm phụ trợ dùng để check trùng lặp (Lấy ngày YYYY-MM-DD từ biến now ở trên)
-    const verifyDuplicate = async (mId) => {
+    const verifyDuplicate = async (mId, currentShift) => {
       try {
-        const todayStr = now.toISOString().split("T")[0]; // Định dạng YYYY-MM-DD
+        const todayStr = new Date().toISOString().split("T")[0]; // Định dạng YYYY-MM-DD
+
+        // Bổ sung param `shift` gửi lên backend
         const res = await api.get("/inspections/check-duplicate", {
-          params: { machine_id: mId, date: todayStr },
+          params: {
+            machine_id: mId,
+            date: todayStr,
+            shift: currentShift,
+          },
         });
 
         setIsDuplicate(res.data.isDuplicate);
@@ -59,7 +65,7 @@ function ChecksheetPage() {
 
     if (machineId) {
       // 🌟 GỌI CHECK TRÙNG SONG SONG HOẶC NGAY KHI CÓ MACHINE_ID
-      verifyDuplicate(machineId);
+      verifyDuplicate(machineId, shift);
 
       // Gọi API Backend lấy thông tin máy và bộ checklist_item đi kèm
       getChecksheet(machineId)
@@ -108,9 +114,8 @@ function ChecksheetPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 🌟 BỔ SUNG 1: Chặn nộp phiếu nếu ngày hôm nay máy này đã được kiểm tra rồi
     if (isDuplicate) {
-      toast.error("Thiết bị này đã được kiểm tra hôm nay. Không thể nộp thêm!");
+      toast.error("Thiết bị này đã được kiểm tra. Không thể nộp thêm!");
       return;
     }
 
@@ -163,7 +168,6 @@ function ChecksheetPage() {
 
     try {
       // 🌟 BỔ SUNG 2: Thêm "await" để đợi Backend xử lý xong và phản hồi
-      // (Hãy đảm bảo hàm sendInfoChecksheet của bạn có trả về một Promise của axios/fetch)
       await sendInfoChecksheet(payload);
 
       toast.success("Đã lưu dữ liệu vào hệ thống Inspection thành công!");
