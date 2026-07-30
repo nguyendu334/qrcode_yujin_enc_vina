@@ -143,7 +143,10 @@
     "category": "Inspection Item",
     "standard": "Standard Specification",
     "classify": "Classification",
-    "day": "Day of Month"
+    "day": "Day of Month",
+    "shift": "Shift",
+    "ngay": "Day",
+    "dem": "Night"
   },
   "maintenance": {
     "title": "MAINTENANCE MANAGEMENT",

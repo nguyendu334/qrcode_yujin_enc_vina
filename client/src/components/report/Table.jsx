@@ -124,7 +124,7 @@ export default function TableReport({ t, reportData, daysArray, totalDays }) {
               rowSpan={2}
               align="center"
               sx={{
-                width: "4%",
+                width: "3%",
                 backgroundColor: "#0f172a",
                 color: "#ffffff",
                 fontWeight: "bold",
@@ -154,7 +154,7 @@ export default function TableReport({ t, reportData, daysArray, totalDays }) {
               rowSpan={2}
               align="left"
               sx={{
-                width: "14%",
+                width: "13%",
                 backgroundColor: "#0f172a",
                 color: "#ffffff",
                 fontWeight: "bold",
@@ -169,7 +169,7 @@ export default function TableReport({ t, reportData, daysArray, totalDays }) {
               rowSpan={2}
               align="center"
               sx={{
-                width: "7%",
+                width: "5%",
                 backgroundColor: "#0f172a",
                 color: "#ffffff",
                 fontWeight: "bold",
@@ -193,13 +193,13 @@ export default function TableReport({ t, reportData, daysArray, totalDays }) {
                 fontSize: "11px",
               }}
             >
-              Ca
+              {t(`report.shift`)}
             </TableCell>
             <TableCell
               colSpan={totalDays}
               align="center"
               sx={{
-                width: "55%",
+                width: "70%",
                 backgroundColor: "#0f172a",
                 color: "#ffffff",
                 fontWeight: "bold",
@@ -321,7 +321,7 @@ export default function TableReport({ t, reportData, daysArray, totalDays }) {
                         padding: "0px",
                       }}
                     >
-                      Ngày
+                      {t(`report.ngay`)}
                     </TableCell>
 
                     {/* CÁC Ô GIÁ TRỊ CA NGÀY */}
@@ -373,7 +373,7 @@ export default function TableReport({ t, reportData, daysArray, totalDays }) {
                         padding: "0px",
                       }}
                     >
-                      Đêm
+                      {t(`report.dem`)}
                     </TableCell>
 
                     {/* CÁC Ô GIÁ TRỊ CA ĐÊM */}

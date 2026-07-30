@@ -144,7 +144,10 @@
     "category": "점검 항목",
     "standard": "점검 기준",
     "classify": "구분",
-    "day": "일자"
+    "day": "일자",
+    "shift": "근무 조",
+    "ngay": "낮",
+    "dem": "야간"
   },
   "maintenance": {
     "title": "설비 보전 관리",

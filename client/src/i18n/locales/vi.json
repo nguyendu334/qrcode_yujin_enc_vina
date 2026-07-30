@@ -143,7 +143,10 @@
     "category": "Hạng mục kiểm tra",
     "standard": "Tiêu chuẩn",
     "classify": "Phân loại",
-    "day": "Ngày trong tháng"
+    "day": "Ngày trong tháng",
+    "shift": "Ca",
+    "ngay": "Ngày",
+    "dem": "Đêm"
   },
   "maintenance": {
     "title": "QUẢN LÝ SỰ CỐ VÀ BẢO TRÌ THIẾT BỊ",
