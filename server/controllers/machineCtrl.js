@@ -3,40 +3,52 @@ const { pool } = require("../config/db");
 // API lấy danh sách máy móc
 const getMachines = async (req, res) => {
   try {
-    // 1. Lấy user_id của người đăng nhập từ req.user (hoặc từ req.query nếu bạn truyền từ frontend)
+    // 1. Lấy user_id và role từ req.user (hoặc từ query)
     const userId = req.user?.user_id || req.query.user_id;
+    const role = req.user?.role || req.query.role; // Ví dụ: 'manager', 'admin', 'user'
 
-    if (!userId) {
+    if (!userId && !role) {
       return res
         .status(400)
-        .json({ error: "Thiếu thông tin người dùng đăng nhập!" });
+        .json({ error: "Thiếu thông tin người dùng hoặc phân quyền!" });
     }
 
-    // 2. Thêm WHERE ct.approver_id = $1 vào câu truy vấn
-    const { rows } = await pool.query(
-      `
-        SELECT DISTINCT
-          m.machine_id,
-          m.machine_code,
-          m.machine_name,
-          m.line_no,
-          m.active,
-          m.area_id,
-          m.machine_type_id,
-          a.area_name,
-          t.machine_type_name,
-          ct.approver_id,
-          u.full_name AS approver_name
-        FROM machine m
-        INNER JOIN checklist_template ct ON m.machine_type_id = ct.machine_type_id
-        LEFT JOIN area a ON m.area_id = a.area_id
-        LEFT JOIN machine_type t ON m.machine_type_id = t.machine_type_id
-        LEFT JOIN users u ON ct.approver_id = u.user_id
-        WHERE ct.approver_id = $1
-        ORDER BY m.machine_code ASC;
-      `,
-      [userId],
-    );
+    // Kiểm tra xem có phải là Quản lý/Admin hay không
+    const isManager = role === "manager";
+
+    // 2. Xây dựng câu truy vấn linh hoạt
+    let query = `
+      SELECT DISTINCT
+        m.machine_id,
+        m.machine_code,
+        m.machine_name,
+        m.line_no,
+        m.active,
+        m.area_id,
+        m.machine_type_id,
+        a.area_name,
+        t.machine_type_name,
+        ct.approver_id,
+        u.full_name AS approver_name
+      FROM machine m
+      INNER JOIN checklist_template ct ON m.machine_type_id = ct.machine_type_id
+      LEFT JOIN area a ON m.area_id = a.area_id
+      LEFT JOIN machine_type t ON m.machine_type_id = t.machine_type_id
+      LEFT JOIN users u ON ct.approver_id = u.user_id
+    `;
+
+    const queryParams = [];
+
+    // 🌟 Nếu KHÔNG PHẢI manager/admin thì mới lọc theo approver_id = userId
+    if (!isManager) {
+      query += ` WHERE ct.approver_id = $1`;
+      queryParams.push(userId);
+    }
+
+    query += ` ORDER BY m.machine_code ASC;`;
+
+    // 3. Thực thi truy vấn
+    const { rows } = await pool.query(query, queryParams);
 
     res.json(rows);
   } catch (err) {
@@ -78,7 +90,7 @@ const addMachine = async (req, res) => {
     // 3. Kiểm tra xem mã máy (machine_code) đã tồn tại trong hệ thống chưa
     const checkDuplicate = await pool.query(
       "SELECT machine_id FROM machine WHERE UPPER(machine_code) = UPPER($1)",
-      [machine_code.trim()],
+      [machine_code.trim()]
     );
     if (checkDuplicate.rows.length > 0) {
       return res.status(400).json({
@@ -137,7 +149,7 @@ const deleteMachine = async (req, res) => {
     // 3. Thực hiện lệnh xóa trong Database
     const result = await pool.query(
       "DELETE FROM machine WHERE machine_id = $1 RETURNING *",
-      [machineId],
+      [machineId]
     );
 
     // 4. Kiểm tra xem có bản ghi nào thực sự bị xóa không (đề phòng ID không tồn tại)
@@ -203,7 +215,7 @@ const updateMachine = async (req, res) => {
     // 4. Kiểm tra trùng lặp mã máy (Đảm bảo không sửa mã máy thành một mã đã tồn tại của máy khác)
     const checkDuplicate = await pool.query(
       "SELECT machine_id FROM machine WHERE UPPER(machine_code) = UPPER($1) AND machine_id <> $2",
-      [machine_code.trim(), machineId],
+      [machine_code.trim(), machineId]
     );
     if (checkDuplicate.rows.length > 0) {
       return res.status(400).json({

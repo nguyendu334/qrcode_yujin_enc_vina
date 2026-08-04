@@ -14,7 +14,9 @@ const Report = () => {
 
   const [machines, setMachines] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState("");
-  const [selectedMonth, setSelectedMonth] = useState("2026-07");
+  const [selectedMonth, setSelectedMonth] = useState(
+    new Date().toISOString().slice(0, 7)
+  );
   const [reportData, setReportData] = useState([]);
   const [approvers, setApprovers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -53,7 +55,7 @@ const Report = () => {
       if (res.data.success) {
         // Nếu Backend chưa gom nhóm sẵn, gọi hàm processMatrixData bên dưới
         processMatrixData(res.data.data);
-        console.log(res.data)
+        console.log(res.data);
       }
     } catch (error) {
       console.error(error);
@@ -138,7 +140,7 @@ const Report = () => {
     }
 
     const currentMachineObj = machines.find(
-      (m) => m.machine_id.toString() === selectedMachine.toString(),
+      (m) => m.machine_id.toString() === selectedMachine.toString()
     );
     const machineNameDisplay = currentMachineObj
       ? `${currentMachineObj.machine_name} (${currentMachineObj.machine_code})`
@@ -280,7 +282,10 @@ const Report = () => {
     const workbook = XLSStyle.utils.book_new();
     XLSStyle.utils.book_append_sheet(workbook, worksheet, "Báo cáo tháng");
 
-    const fileName = `Bao_Cao_Checksheet_${selectedMonth.replace("-", "_")}.xlsx`;
+    const fileName = `Bao_Cao_Checksheet_${selectedMonth.replace(
+      "-",
+      "_"
+    )}.xlsx`;
     XLSStyle.writeFile(workbook, fileName);
   };
 
@@ -332,7 +337,7 @@ const Report = () => {
     doc.text(
       `BAO CAO CHECKSHEET TONG HOP THEO THANG (${selectedMonth})`,
       14,
-      15,
+      15
     );
     if (approvers.length > 0) {
       doc.text(`Nguoi phe duyet: ${approvers.join(", ")}`, 14, 23);

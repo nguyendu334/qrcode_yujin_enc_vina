@@ -14,20 +14,19 @@ import {
 import { Logout } from "@mui/icons-material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
-import EngineeringIcon from '@mui/icons-material/Engineering';
+import EngineeringIcon from "@mui/icons-material/Engineering";
 import HistoryIcon from "@mui/icons-material/History";
 import DescriptionIcon from "@mui/icons-material/Description";
 import GroupIcon from "@mui/icons-material/Group";
 import SettingsIcon from "@mui/icons-material/Settings";
 
 import { NavLink } from "react-router-dom";
-
 import { useTranslation } from "react-i18next";
-
 import { useAuth } from "../../context/AuthContext";
 
 const width = 300;
 
+// 🌟 1. THÊM TRƯỜNG `roles` ĐỂ PHÂN QUYỀN CHO TỪNG MENU
 const menus = [
   {
     name: "sidebar.dashboard",
@@ -49,19 +48,17 @@ const menus = [
     icon: <DescriptionIcon />,
     path: "/report",
   },
-
   {
     name: "sidebar.maintenance",
     icon: <EngineeringIcon />,
     path: "/maintenance-management",
   },
-
   {
     name: "sidebar.user",
     icon: <GroupIcon />,
     path: "/user",
+    roles: ["manager"], // 🌟 CHỈ MANAGER HOẶC ADMIN MỚI THẤY
   },
-
   {
     name: "sidebar.setting",
     icon: <SettingsIcon />,
@@ -72,13 +69,29 @@ const menus = [
 export default function Sidebar() {
   const { t } = useTranslation();
   const { user } = useAuth();
+
+  // 🌟 2. CHUẨN HÓA ROLES CỦA USER VỀ DẠNG MẢNG
+  const userRoles = Array.isArray(user?.roles)
+    ? user.roles
+    : [user?.role].filter(Boolean);
+
+  // 🌟 3. HÀM KIỂM TRA QUYỀN TRUY CẬP CỦA USER
+  const hasAccess = (allowedRoles) => {
+    // Nếu menu không ghi roles -> Ai cũng được thấy
+    if (!allowedRoles || allowedRoles.length === 0) return true;
+
+    // So sánh xem userRoles có chứa role hợp lệ không
+    return allowedRoles.some((role) =>
+      userRoles.map((r) => r.toLowerCase()).includes(role.toLowerCase())
+    );
+  };
+
   return (
     <Drawer
       variant="permanent"
       sx={{
         width,
         flexShrink: 0,
-
         "& .MuiDrawer-paper": {
           width,
           background: "#0f172a",
@@ -109,9 +122,9 @@ export default function Sidebar() {
                 height: "8px",
                 borderRadius: "50%",
                 background:
-                  user.role === "manager"
+                  user?.role === "manager"
                     ? "green"
-                    : user.role === "admin"
+                    : user?.role === "admin"
                     ? "#fef3c7"
                     : "#e0f2fe",
               }}
@@ -122,7 +135,7 @@ export default function Sidebar() {
                 fontWeight: "700",
               }}
             >
-              {user.role.toUpperCase()}
+              {user?.role?.toUpperCase()}
             </Typography>
           </Box>
         </Box>
@@ -131,51 +144,48 @@ export default function Sidebar() {
       <Divider sx={{ borderColor: "#374151" }} />
 
       <List>
-        {menus.map((menu) => (
-          <ListItemButton
-            component={NavLink}
-            to={menu.path}
-            key={menu.name}
-            sx={{
-              mx: 1,
-
-              my: 0.5,
-
-              borderRadius: 3,
-
-              "&.active": {
-                background: "#4f46e5",
-              },
-
-              "&:hover": {
-                background: "#312e81",
-              },
-            }}
-          >
-            <ListItemIcon
-              sx={{ color: "#fff" }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                textDecoration: "none",
-                padding: "4px 16px",
-                borderRadius: "8px",
-                fontWeight: "500",
-                transition: "all 0.2s ease",
+        {/* 🌟 4. LỌC DANH SÁCH MENU TRƯỚC KHI MAP */}
+        {menus
+          .filter((menu) => hasAccess(menu.roles))
+          .map((menu) => (
+            <ListItemButton
+              component={NavLink}
+              to={menu.path}
+              key={menu.name}
+              sx={{
+                mx: 1,
+                my: 0.5,
+                borderRadius: 3,
+                "&.active": {
+                  background: "#4f46e5",
+                },
+                "&:hover": {
+                  background: "#312e81",
+                },
               }}
             >
-              {menu.icon}
-            </ListItemIcon>
+              <ListItemIcon
+                sx={{ color: "#fff" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  textDecoration: "none",
+                  padding: "4px 16px",
+                  borderRadius: "8px",
+                  fontWeight: "500",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                {menu.icon}
+              </ListItemIcon>
 
-            <ListItemText primary={t(menu.name)} />
-          </ListItemButton>
-        ))}
+              <ListItemText primary={t(menu.name)} />
+            </ListItemButton>
+          ))}
       </List>
 
       <Box sx={{ flexGrow: 1 }} />
-
-      {/* <Divider sx={{ borderColor: "#374151" }} /> */}
 
       <Button
         onClick={() => {
@@ -183,7 +193,6 @@ export default function Sidebar() {
           window.location.href = "/";
         }}
         sx={{
-          // marginBottom: "8px",
           width: "100%",
           background: "rgba(239, 68, 68, 0.1)",
           color: "#ef4444",

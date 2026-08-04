@@ -136,16 +136,19 @@ const createTicket = async (req, res) => {
 // 1. API: Lấy danh sách ticket (có kèm thông tin máy để hiển thị cho rõ ràng)
 const getTickets = async (req, res) => {
   const loggedInApproverId = req.user?.user_id;
+  const role = req.user?.role || req.query.role;
 
-  if (!loggedInApproverId) {
+  if (!loggedInApproverId && !role) {
     return res
       .status(401)
       .json({ error: "Bạn cần đăng nhập để xem danh sách quản lý!" });
   }
 
+  const isManager = role === "manager";
+
   try {
-    const query = `
-      SELECT 
+    let baseQuery = `
+      SELECT DISTINCT
         t.ticket_id,
         t.reporter_name,
         t.issue_description,
@@ -158,34 +161,40 @@ const getTickets = async (req, res) => {
         m.machine_name,
         m.line_no
       FROM maintenance_ticket t
-      -- 1. Từ Ticket nối sang bảng Machine
       JOIN machine m ON t.machine_id = m.machine_id
-      
-      -- 2. Từ Machine nối sang bảng Machine_Type
       JOIN machine_type mt ON m.machine_type_id = mt.machine_type_id
-      
-      -- 3. Từ Machine_Type nối sang bảng Checklist_Template
       JOIN checklist_template ct ON mt.machine_type_id = ct.machine_type_id
-      
-      -- 4. Lọc theo approver_id của người đang đăng nhập
-      WHERE ct.approver_id = $1 
-      
+    `;
+
+    const queryParams = [];
+
+    // 🌟 Nếu KHÔNG PHẢI Manager/Admin thì mới lọc theo approver_id
+    if (!isManager) {
+      baseQuery += ` WHERE ct.approver_id = $1`;
+      queryParams.push(loggedInApproverId);
+    }
+
+    // BọcSubquery lại để ORDER BY bên ngoài mà không bị dính lỗi SELECT DISTINCT của PostgreSQL
+    const finalQuery = `
+      SELECT * FROM (
+        ${baseQuery}
+      ) AS sub
       ORDER BY 
-        CASE t.status 
+        CASE sub.status 
           WHEN 'PENDING' THEN 1
           WHEN 'PROCESSING' THEN 2
           WHEN 'CLOSED' THEN 3
           ELSE 4 
         END, 
-        t.created_at DESC;
+        sub.created_at DESC;
     `;
 
-    const result = await pool.query(query, [loggedInApproverId]);
+    const result = await pool.query(finalQuery, queryParams);
     res.status(200).json({ success: true, tickets: result.rows });
   } catch (err) {
     console.error(
       "Lỗi lấy danh sách ticket theo người phụ trách:",
-      err.message,
+      err.message
     );
     res.status(500).json({ error: "Lỗi hệ thống khi lấy danh sách yêu cầu!" });
   }
