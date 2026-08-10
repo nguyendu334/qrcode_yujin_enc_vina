@@ -15,6 +15,8 @@ import Setting from "../pages/Setting/SettingPage";
 import MachineMenu from "../pages/MachineMenu/MachineMenu";
 import CreateTicket from "../pages/Ticket/CreateTicket";
 import MaintenanceManagement from "../pages/Ticket/MaintenanceManagement";
+import MachineTypePage from "../pages/Machine/MachineType";
+import Area from "../pages/Machine/Area";
 
 export default function AppRouter() {
   return (
@@ -34,11 +36,16 @@ export default function AppRouter() {
           <Route path="/dashboard" element={<Dashboard />} />
 
           <Route path="/machine" element={<Machine />} />
+          <Route path="/machine-types" element={<MachineTypePage />} />
+          <Route path="/locations" element={<Area />} />
 
           <Route path="/history" element={<History />} />
 
           <Route path="/report" element={<Report />} />
-          <Route path="//maintenance-management" element={<MaintenanceManagement />} />
+          <Route
+            path="//maintenance-management"
+            element={<MaintenanceManagement />}
+          />
           <Route path="/setting" element={<Setting />} />
           <Route
             path="/user"
@@ -48,6 +55,8 @@ export default function AppRouter() {
               </RoleRoute>
             }
           />
+          <Route path="/departments" element={<Setting />} />
+          <Route path="/user-roles" element={<Setting />} />
         </Route>
       </Routes>
     </BrowserRouter>

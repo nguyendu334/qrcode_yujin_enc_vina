@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Drawer,
   Toolbar,
@@ -12,6 +12,7 @@ import {
   Button,
   IconButton,
   Tooltip,
+  Collapse,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -20,6 +21,8 @@ import {
   Logout,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
+  ExpandLess,
+  ExpandMore,
 } from "@mui/icons-material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
@@ -29,12 +32,56 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import GroupIcon from "@mui/icons-material/Group";
 import SettingsIcon from "@mui/icons-material/Settings";
 
-import { NavLink } from "react-router-dom";
+import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
+import CategoryIcon from "@mui/icons-material/Category";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import PersonIcon from "@mui/icons-material/Person";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+
+import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 
 const FULL_WIDTH = 280;
 const COLLAPSED_WIDTH = 80;
+
+// Submenu của Quản lý thiết bị
+const deviceSubItems = [
+  {
+    text: "Danh sách thiết bị",
+    path: "/machine",
+    icon: <FormatListBulletedIcon fontSize="small" />,
+  },
+  {
+    text: "Kiểu máy",
+    path: "/machine-types",
+    icon: <CategoryIcon fontSize="small" />,
+  },
+  {
+    text: "Khu vực đặt máy",
+    path: "/locations",
+    icon: <LocationOnIcon fontSize="small" />,
+  },
+];
+
+// 🌟 Submenu của Quản lý người dùng
+const userSubItems = [
+  {
+    text: "Danh sách người dùng",
+    path: "/user",
+    icon: <PersonIcon fontSize="small" />,
+  },
+  {
+    text: "Phòng ban",
+    path: "/departments",
+    icon: <PersonIcon fontSize="small" />,
+  },
+  {
+    text: "Phân quyền & Vai trò",
+    path: "/user-roles",
+    icon: <AdminPanelSettingsIcon fontSize="small" />,
+  },
+];
 
 const menus = [
   { name: "sidebar.dashboard", icon: <DashboardIcon />, path: "/dashboard" },
@@ -42,6 +89,9 @@ const menus = [
     name: "sidebar.machine",
     icon: <PrecisionManufacturingIcon />,
     path: "/machine",
+    hasSubMenu: true,
+    subItems: deviceSubItems,
+    key: "machine",
   },
   { name: "sidebar.history", icon: <HistoryIcon />, path: "/history" },
   { name: "sidebar.report", icon: <DescriptionIcon />, path: "/report" },
@@ -55,6 +105,9 @@ const menus = [
     icon: <GroupIcon />,
     path: "/user",
     roles: ["manager"],
+    hasSubMenu: true, // 🌟 Bật Submenu cho User
+    subItems: userSubItems,
+    key: "user",
   },
   { name: "sidebar.setting", icon: <SettingsIcon />, path: "/setting" },
 ];
@@ -64,11 +117,25 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const theme = useTheme();
+  const location = useLocation();
 
-  // Tự động phát hiện Tablet/Mobile (< 900px)
+  // State quản lý Đóng/Mở từng Submenu
+  const [openSubMenus, setOpenSubMenus] = useState({
+    machine: true,
+    user: true,
+  });
+
+  const toggleSubMenu = (key) => {
+    if (collapsed) {
+      setCollapsed(false);
+      setOpenSubMenus((prev) => ({ ...prev, [key]: true }));
+    } else {
+      setOpenSubMenus((prev) => ({ ...prev, [key]: !prev[key] }));
+    }
+  };
+
   const isTabletOrMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  // Tự động thu nhỏ Sidebar khi màn hình nhỏ hơn 900px
   useEffect(() => {
     setCollapsed(isTabletOrMobile);
   }, [isTabletOrMobile, setCollapsed]);
@@ -149,7 +216,6 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           </Box>
         )}
 
-        {/* Nút bấm Đóng / Mở */}
         <IconButton
           onClick={() => setCollapsed(!collapsed)}
           sx={{ color: "#94a3b8", "&:hover": { color: "#fff" } }}
@@ -165,6 +231,107 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         {menus
           .filter((menu) => hasAccess(menu.roles))
           .map((menu) => {
+            // Cấu trúc chung cho các Menu có Submenu (Machine, User...)
+            if (menu.hasSubMenu) {
+              const isSubActive = menu.subItems.some(
+                (sub) => sub.path === location.pathname,
+              );
+              const isOpen = openSubMenus[menu.key];
+
+              return (
+                <Box key={menu.name}>
+                  <ListItemButton
+                    onClick={() => toggleSubMenu(menu.key)}
+                    sx={{
+                      my: 0.5,
+                      borderRadius: 2,
+                      justifyContent: collapsed ? "center" : "initial",
+                      px: collapsed ? 1.5 : 2,
+                      background: isSubActive
+                        ? "rgba(79, 70, 229, 0.2)"
+                        : "transparent",
+                      "&:hover": { background: "#312e81" },
+                    }}
+                  >
+                    <ListItemIcon
+                      sx={{
+                        color: isSubActive ? "#818cf8" : "#fff",
+                        minWidth: 0,
+                        mr: collapsed ? 0 : 2,
+                        justifyContent: "center",
+                      }}
+                    >
+                      {menu.icon}
+                    </ListItemIcon>
+
+                    {!collapsed && (
+                      <>
+                        <ListItemText
+                          primary={t(menu.name)}
+                          primaryTypographyProps={{
+                            fontSize: "14px",
+                            fontWeight: isSubActive ? 600 : 500,
+                            color: isSubActive ? "#818cf8" : "#fff",
+                          }}
+                        />
+                        {isOpen ? (
+                          <ExpandLess sx={{ color: "#94a3b8" }} />
+                        ) : (
+                          <ExpandMore sx={{ color: "#94a3b8" }} />
+                        )}
+                      </>
+                    )}
+                  </ListItemButton>
+
+                  <Collapse
+                    in={isOpen && !collapsed}
+                    timeout="auto"
+                    unmountOnExit
+                  >
+                    <List component="div" disablePadding>
+                      {menu.subItems.map((sub) => (
+                        <ListItemButton
+                          key={sub.path}
+                          component={NavLink}
+                          to={sub.path}
+                          sx={{
+                            my: 0.3,
+                            pl: 4,
+                            borderRadius: 2,
+                            "&.active": {
+                              background: "#4f46e5",
+                              color: "#fff",
+                            },
+                            "&:hover": {
+                              background: "rgba(255, 255, 255, 0.08)",
+                            },
+                          }}
+                        >
+                          <ListItemIcon
+                            sx={{
+                              color: "#94a3b8",
+                              minWidth: "28px",
+                              ".active &": { color: "#fff" },
+                            }}
+                          >
+                            {sub.icon}
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={sub.text}
+                            primaryTypographyProps={{
+                              fontSize: "13px",
+                              fontWeight: 400,
+                            }}
+                          />
+                        </ListItemButton>
+                      ))}
+                    </List>
+                  </Collapse>
+                </Box>
+              );
+            }
+
+            // Menu đơn lẻ không có Submenu
             const buttonContent = (
               <ListItemButton
                 component={NavLink}
