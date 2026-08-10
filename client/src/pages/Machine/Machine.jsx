@@ -124,6 +124,10 @@ export default function MachinePage() {
     }
   };
 
+  const handleCloseQR = () => {
+    setSelectedQRMachine(null);
+  }
+
   const keyword = searchTerm.trim().toLowerCase();
 
   const filteredMachines = machines.filter((m) => {
@@ -195,7 +199,7 @@ export default function MachinePage() {
       />
 
       <Box>
-        {selectedQRMachine && <QRCodeCard machine={selectedQRMachine} />}
+        {selectedQRMachine && <QRCodeCard machine={selectedQRMachine} onClose={handleCloseQR} />}
       </Box>
 
       <MachineDialog

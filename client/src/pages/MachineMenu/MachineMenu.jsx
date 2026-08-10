@@ -21,6 +21,7 @@ import {
 } from "@mui/icons-material";
 import { getChecksheet } from "../../services/checksheetService";
 import { useTranslation } from "react-i18next";
+import Footer from "../../components/layout/Footer";
 
 const MachineMenu = () => {
   const { i18n } = useTranslation();
@@ -364,6 +365,18 @@ const MachineMenu = () => {
             </Typography>
           </Box>
         </Box>
+      </Box>
+      <Box
+        sx={{
+          maxWidth: "480px", // Cố định chiều rộng khung nội dung giống như ảnh
+          mx: "auto", // Căn giữa toàn bộ Card ra giữa màn hình
+          py: 12,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Footer />
       </Box>
     </Box>
   );

@@ -22,7 +22,7 @@ import {
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "react-toastify";
 
-export default function QRCodeCard({ machine }) {
+export default function QRCodeCard({ machine, onClose }) {
   const { t } = useTranslation();
   if (!machine) return null;
 
@@ -112,6 +112,24 @@ export default function QRCodeCard({ machine }) {
         >
           {t("qrcodecard.qrcode")}
         </Typography>
+        <Button
+          variant="outlined"
+          sx={{
+            color: "#fff",
+            borderColor: "#fff",
+            "&:hover": {
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
+            },
+            width: "36px",
+            height: "36px",
+            minWidth: "36px",
+            borderRadius: "50%",
+            padding: 0,
+          }}
+          onClick={onClose}
+        >
+          ❌
+        </Button>
       </Box>
 
       {/* BODY */}
