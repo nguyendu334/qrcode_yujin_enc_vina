@@ -19,6 +19,11 @@ import {
   TextField,
   Typography,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
 } from "@mui/material";
 
 import { toast } from "react-toastify";
@@ -26,10 +31,17 @@ import { toast } from "react-toastify";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 
-import { getMachineTypes } from "../../services/machineService";
+import {
+  addMachineType,
+  deleteMachineType,
+  getMachineTypes,
+  updateMachineType,
+} from "../../services/machineService";
+import { getUsers } from "../../services/userService"; // Thêm API lấy danh sách người dùng
 
 export default function MachineType() {
   const [deviceTypes, setDeviceTypes] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
@@ -38,12 +50,15 @@ export default function MachineType() {
   const [formData, setFormData] = useState({
     machine_type_name: "",
     description: "",
+    frequency: "DAILY",
+    approver_id: "",
   });
   const [errors, setErrors] = useState({});
 
-  // 1. Gọi API lấy danh sách kiểu máy khi component render
+  // 1. Gọi API lấy danh sách kiểu máy và danh sách người dùng khi component render
   useEffect(() => {
     fetchMachineTypes();
+    fetchUsers();
   }, []);
 
   const fetchMachineTypes = async () => {
@@ -60,6 +75,16 @@ export default function MachineType() {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const response = await getUsers();
+      setUsers(response?.data || response || []);
+    } catch (error) {
+      console.error("Lỗi gọi API getUsers:", error);
+      toast.error("Lỗi khi tải danh sách người dùng.");
+    }
+  };
+
   // Tìm kiếm theo tên kiểu máy
   const filteredTypes = deviceTypes.filter((item) =>
     item.machine_type_name?.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -71,10 +96,17 @@ export default function MachineType() {
       setFormData({
         machine_type_name: item.machine_type_name || "",
         description: item.description || "",
+        frequency: item.frequency || "DAILY",
+        approver_id: item.approver_id || "",
       });
     } else {
       setEditingItem(null);
-      setFormData({ machine_type_name: "", description: "" });
+      setFormData({
+        machine_type_name: "",
+        description: "",
+        frequency: "DAILY",
+        approver_id: "",
+      });
     }
     setErrors({});
     setOpenDialog(true);
@@ -89,6 +121,9 @@ export default function MachineType() {
     if (!formData.machine_type_name.trim()) {
       newErrors.machine_type_name = "Tên kiểu máy không được để trống";
     }
+    if (!formData.approver_id) {
+      newErrors.approver_id = "Vui lòng chọn người duyệt";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -96,43 +131,50 @@ export default function MachineType() {
   const handleSubmit = async () => {
     if (!validate()) return;
 
-    if (editingItem) {
-      // Tùy chỉnh gọi API PUT/PATCH ở đây nếu có
-      setDeviceTypes((prev) =>
-        prev.map((item) =>
-          item.machine_type_id === editingItem.machine_type_id
-            ? { ...item, ...formData }
-            : item,
-        ),
-      );
-      toast.success("Cập nhật kiểu máy thành công!");
-    } else {
-      // Tùy chỉnh gọi API POST ở đây nếu có
-      const nextId =
-        deviceTypes.length > 0
-          ? Math.max(...deviceTypes.map((d) => d.machine_type_id)) + 1
-          : 1;
-
-      const newItem = {
-        machine_type_id: nextId,
+    try {
+      const payload = {
         machine_type_name: formData.machine_type_name.trim(),
         description: formData.description.trim(),
+        frequency: formData.frequency,
+        approver_id: Number(formData.approver_id),
       };
 
-      setDeviceTypes([newItem, ...deviceTypes]);
-      toast.success("Thêm kiểu máy mới thành công!");
-    }
+      if (editingItem) {
+        // Gọi API Cập nhật
+        await updateMachineType(editingItem.machine_type_id, payload);
+        toast.success("Cập nhật kiểu máy thành công!");
+      } else {
+        // 🌟 Gọi API Thêm mới
+        await addMachineType(payload);
+        toast.success("Thêm kiểu máy mới thành công!");
+      }
 
-    setOpenDialog(false);
+      // Tải lại danh sách mới nhất từ Database và đóng Modal
+      fetchMachineTypes();
+      setOpenDialog(false);
+    } catch (error) {
+      console.error("Lỗi khi lưu kiểu máy:", error);
+      toast.error(
+        error?.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!",
+      );
+    }
   };
 
   const handleDelete = async (id) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa kiểu máy này?")) {
-      // Tùy chỉnh gọi API DELETE ở đây nếu có
-      setDeviceTypes((prev) =>
-        prev.filter((item) => item.machine_type_id !== id),
-      );
-      toast.success("Xóa kiểu máy thành công!");
+      try {
+        await deleteMachineType(id);
+        toast.success("Xóa kiểu máy thành công!");
+
+        // Tải lại danh sách mới nhất từ Database
+        fetchMachineTypes();
+      } catch (error) {
+        console.error("Lỗi khi xóa kiểu máy:", error);
+        toast.error(
+          error?.response?.data?.error ||
+            "Không thể xóa kiểu máy, vui lòng thử lại!",
+        );
+      }
     }
   };
 
@@ -216,6 +258,12 @@ export default function MachineType() {
               <TableCell sx={{ fontWeight: 600, color: "#475569" }}>
                 Tên kiểu máy
               </TableCell>
+              <TableCell sx={{ fontWeight: 600, color: "#475569" }}>
+                Người phê duyệt
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600, color: "#475569" }}>
+                Tần suất kiểm tra
+              </TableCell>
               <TableCell
                 align="center"
                 sx={{ fontWeight: 600, color: "#475569" }}
@@ -252,6 +300,12 @@ export default function MachineType() {
                   </TableCell>
                   <TableCell sx={{ fontWeight: 600, color: "#1e293b" }}>
                     {row.machine_type_name}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: "#1e293b" }}>
+                    {row.approver_name || "—"}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: "#1e293b" }}>
+                    {row.frequency || "—"}
                   </TableCell>
                   <TableCell align="center" sx={{ color: "#64748b" }}>
                     {row.description || "—"}
@@ -342,6 +396,51 @@ export default function MachineType() {
               required
             />
 
+            {/* Tần suất kiểm tra */}
+            <FormControl fullWidth required>
+              <InputLabel>Tần suất kiểm tra</InputLabel>
+              <Select
+                value={formData.frequency}
+                label="Tần suất kiểm tra"
+                onChange={(e) =>
+                  setFormData({ ...formData, frequency: e.target.value })
+                }
+              >
+                <MenuItem value="DAILY">DAILY (Hàng ngày)</MenuItem>
+                <MenuItem value="WEEKLY">WEEKLY (Hàng tuần)</MenuItem>
+                <MenuItem value="MONTHLY">MONTHLY (Hàng tháng)</MenuItem>
+              </Select>
+            </FormControl>
+
+            {/* Người duyệt */}
+            <FormControl fullWidth required error={Boolean(errors.approver_id)}>
+              <InputLabel>Người duyệt</InputLabel>
+              <Select
+                value={formData.approver_id}
+                label="Người duyệt"
+                onChange={(e) =>
+                  setFormData({ ...formData, approver_id: e.target.value })
+                }
+              >
+                {users.map((user) => {
+                  const id = user.user_id || user.id;
+                  const name =
+                    user.full_name ||
+                    user.username ||
+                    user.name ||
+                    `User #${id}`;
+                  return (
+                    <MenuItem key={id} value={id}>
+                      {name}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+              {errors.approver_id && (
+                <FormHelperText>{errors.approver_id}</FormHelperText>
+              )}
+            </FormControl>
+
             <TextField
               label="Mô tả"
               value={formData.description}
@@ -378,7 +477,6 @@ export default function MachineType() {
           </Button>
         </DialogActions>
       </Dialog>
-    
     </Container>
   );
 }

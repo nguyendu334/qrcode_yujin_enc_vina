@@ -9,7 +9,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
   InputAdornment,
   Paper,
   Table,
@@ -29,17 +28,16 @@ import {
 
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 
-// ⚠️ Thay đổi đường dẫn import API cho đúng với dự án của bạn
 import { getAreas } from "../../services/machineService";
-
 
 // Dữ liệu mẫu danh sách bộ phận (dùng chọn department_id)
 const departmentsList = [
-  { department_id: 1, department_name: "Bộ phận Sản xuất" },
-  { department_id: 2, department_name: "Khối Văn phòng" },
+  { department_id: 1, department_name: "Production" },
+  { department_id: 2, department_name: "VP" },
+  { department_id: 3, department_name: "TECH" },
+  { department_id: 4, department_name: "QC" },
+  { department_id: 5, department_name: "KHO" },
 ];
 
 export default function Area() {
@@ -63,7 +61,6 @@ export default function Area() {
     setLoading(true);
     try {
       const response = await getAreas();
-      console.log(response)
       const data = response || [];
       setAreas(data);
     } catch (error) {
@@ -214,7 +211,8 @@ export default function Area() {
           <TableHead sx={{ backgroundColor: "#f8fafc" }}>
             <TableRow>
               <TableCell
-                sx={{ fontWeight: 600, color: "#475569", width: "80px" }}
+                align="center"
+                sx={{ fontWeight: 600, color: "#475569", width: "100px" }}
               >
                 STT
               </TableCell>
@@ -225,8 +223,8 @@ export default function Area() {
                 Bộ phận
               </TableCell>
               <TableCell
-                align="right"
-                sx={{ fontWeight: 600, color: "#475569", width: "120px" }}
+                align="center"
+                sx={{ fontWeight: 600, color: "#475569", width: "250px" }}
               >
                 Thao tác
               </TableCell>
@@ -246,7 +244,10 @@ export default function Area() {
             ) : filteredAreas.length > 0 ? (
               filteredAreas.map((row, index) => (
                 <TableRow key={row.area_id || index} hover>
-                  <TableCell sx={{ fontWeight: 600, color: "#64748b" }}>
+                  <TableCell
+                    align="center"
+                    sx={{ fontWeight: 600, color: "#64748b" }}
+                  >
                     {index + 1}
                   </TableCell>
                   <TableCell sx={{ fontWeight: 600, color: "#1e293b" }}>
@@ -255,21 +256,45 @@ export default function Area() {
                   <TableCell sx={{ color: "#64748b" }}>
                     {row.department_name}
                   </TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      size="small"
+                  <TableCell align="center">
+                    <Button
                       onClick={() => handleOpenDialog(row)}
-                      sx={{ color: "#64748b", mr: 0.5 }}
+                      style={{
+                        marginRight: "12px",
+                        border: "1px solid #cbd5e1",
+                        background: "#fff",
+                        padding: "6px 12px",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
+                      onMouseOver={(e) =>
+                        (e.currentTarget.style.backgroundColor = "#A8D4FF")
+                      }
+                      onMouseOut={(e) =>
+                        (e.currentTarget.style.backgroundColor = "#fff")
+                      }
                     >
-                      <EditOutlinedIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleDelete(row.area_id)}
-                      sx={{ color: "#ef4444" }}
+                      ✏️ Sửa
+                    </Button>
+                    <Button
+                      onClick={() => handleDelete(row.machine_type_id)}
+                      style={{
+                        border: "1px solid #fee2e2",
+                        background: "#fff",
+                        color: "#dc2626",
+                        padding: "6px 12px",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
+                      onMouseOver={(e) =>
+                        (e.currentTarget.style.backgroundColor = "#F6BFB1")
+                      }
+                      onMouseOut={(e) =>
+                        (e.currentTarget.style.backgroundColor = "#fff")
+                      }
                     >
-                      <DeleteOutlinedIcon fontSize="small" />
-                    </IconButton>
+                      ❌ Xoá
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -332,7 +357,7 @@ export default function Area() {
               >
                 {departmentsList.map((dept) => (
                   <MenuItem key={dept.department_id} value={dept.department_id}>
-                    {dept.department_name} (ID: {dept.department_id})
+                    {dept.department_name}
                   </MenuItem>
                 ))}
               </Select>

@@ -37,8 +37,8 @@ export default function MachineTable({
       >
         <TableHead>
           <TableRow>
-            <TableCell align="center">{t("machineTable.code")}</TableCell>
-            <TableCell align="center">{t("machineTable.name")}</TableCell>
+            <TableCell>{t("machineTable.code")}</TableCell>
+            <TableCell>{t("machineTable.name")}</TableCell>
             <TableCell align="center">{t("machineTable.area")}</TableCell>
             <TableCell align="center">{t("machineTable.line")}</TableCell>
             <TableCell align="center">{t("machineTable.type")}</TableCell>
@@ -52,9 +52,9 @@ export default function MachineTable({
         <TableBody>
           {machines.map((machine) => (
             <TableRow key={machine.machine_id}>
-              <TableCell align="center">{machine.machine_code}</TableCell>
+              <TableCell>{machine.machine_code}</TableCell>
 
-              <TableCell align="center">{machine.machine_name}</TableCell>
+              <TableCell>{machine.machine_name}</TableCell>
 
               <TableCell align="center">
                 {t(`area.${machine.area_name}`)}

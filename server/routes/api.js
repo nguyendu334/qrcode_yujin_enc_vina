@@ -19,7 +19,7 @@ const {
   deleteMachine,
   updateMachine,
 } = require("../controllers/machineCtrl.js");
-const { getMachineType } = require("../controllers/machineTypeCtrl.js");
+const { getMachineType, addMachineType, updateMachineType, deleteMachineType } = require("../controllers/machineTypeCtrl.js");
 
 const { verifyToken, checkRole } = require("../middleware/auth");
 const {
@@ -42,6 +42,9 @@ router.delete("/machines/:id", verifyToken, deleteMachine);
 router.put("/machines/:id", verifyToken, updateMachine);
 
 router.get("/machine-types", verifyToken, getMachineType);
+router.post("/machine-types", verifyToken, addMachineType);
+router.put("/machine-types/:id", verifyToken, updateMachineType);
+router.delete("/machine-types/:id", verifyToken, deleteMachineType);
 
 router.get("/areas", verifyToken, getAreas);
 
