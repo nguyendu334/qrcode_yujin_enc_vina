@@ -29,7 +29,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 
-import { getAreas } from "../../services/machineService";
+import { addArea, deleteArea, getAreas, updateArea } from "../../services/machineService";
 
 // Dữ liệu mẫu danh sách bộ phận (dùng chọn department_id)
 const departmentsList = [
@@ -106,36 +106,48 @@ export default function Area() {
   const handleSubmit = async () => {
     if (!validate()) return;
 
-    if (editingItem) {
-      setAreas((prev) =>
-        prev.map((item) =>
-          item.area_id === editingItem.area_id
-            ? { ...item, ...formData }
-            : item,
-        ),
-      );
-      toast.success("Cập nhật khu vực thành công!");
-    } else {
-      const nextId =
-        areas.length > 0 ? Math.max(...areas.map((a) => a.area_id)) + 1 : 1;
-
-      const newItem = {
-        area_id: nextId,
+    try {
+      const payload = {
         department_id: Number(formData.department_id),
         area_name: formData.area_name.trim(),
       };
 
-      setAreas([newItem, ...areas]);
-      toast.success("Thêm khu vực mới thành công!");
-    }
+      if (editingItem) {
+        // 🌟 Gọi API cập nhật khu vực
+        await updateArea(editingItem.area_id, payload);
+        toast.success("Cập nhật khu vực thành công!");
+      } else {
+        // 🌟 Gọi API thêm mới khu vực
+        await addArea(payload);
+        toast.success("Thêm khu vực mới thành công!");
+      }
 
-    setOpenDialog(false);
+      // Tải lại danh sách mới nhất từ Database và đóng Modal
+      fetchAreas();
+      setOpenDialog(false);
+    } catch (error) {
+      console.error("Lỗi khi lưu khu vực:", error);
+      toast.error(
+        error?.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!",
+      );
+    }
   };
 
   const handleDelete = async (id) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa khu vực này?")) {
-      setAreas((prev) => prev.filter((item) => item.area_id !== id));
-      toast.info("Đã xóa khu vực!");
+      try {
+        await deleteArea(id);
+        toast.success("Xóa khu vực thành công!");
+
+        // Tải lại danh sách mới nhất từ Database
+        fetchAreas();
+      } catch (error) {
+        console.error("Lỗi khi xóa khu vực:", error);
+        toast.error(
+          error?.response?.data?.error ||
+            "Không thể xóa khu vực, vui lòng thử lại!",
+        );
+      }
     }
   };
 
@@ -277,7 +289,7 @@ export default function Area() {
                       ✏️ Sửa
                     </Button>
                     <Button
-                      onClick={() => handleDelete(row.machine_type_id)}
+                      onClick={() => handleDelete(row.area_id)}
                       style={{
                         border: "1px solid #fee2e2",
                         background: "#fff",

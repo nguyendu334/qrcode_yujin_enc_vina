@@ -36,6 +36,7 @@ import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import CategoryIcon from "@mui/icons-material/Category";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
+import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 
 import { NavLink, useLocation } from "react-router-dom";
@@ -56,6 +57,7 @@ const deviceSubItems = [
     text: "Kiểu máy",
     path: "/machine-types",
     icon: <CategoryIcon fontSize="small" />,
+    // roles: ["manager"],
   },
   {
     text: "Khu vực đặt máy",
@@ -74,7 +76,7 @@ const userSubItems = [
   {
     text: "Phòng ban",
     path: "/departments",
-    icon: <PersonIcon fontSize="small" />,
+    icon: <LocalFireDepartmentIcon fontSize="small" />,
   },
   {
     text: "Phân quyền & Vai trò",
@@ -289,42 +291,44 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                     unmountOnExit
                   >
                     <List component="div" disablePadding>
-                      {menu.subItems.map((sub) => (
-                        <ListItemButton
-                          key={sub.path}
-                          component={NavLink}
-                          to={sub.path}
-                          sx={{
-                            my: 0.3,
-                            pl: 4,
-                            borderRadius: 2,
-                            "&.active": {
-                              background: "#4f46e5",
-                              color: "#fff",
-                            },
-                            "&:hover": {
-                              background: "rgba(255, 255, 255, 0.08)",
-                            },
-                          }}
-                        >
-                          <ListItemIcon
+                      {menu.subItems
+                        .filter((menu) => hasAccess(menu.roles))
+                        .map((sub) => (
+                          <ListItemButton
+                            key={sub.path}
+                            component={NavLink}
+                            to={sub.path}
                             sx={{
-                              color: "#94a3b8",
-                              minWidth: "28px",
-                              ".active &": { color: "#fff" },
+                              my: 0.3,
+                              pl: 4,
+                              borderRadius: 2,
+                              "&.active": {
+                                background: "#4f46e5",
+                                color: "#fff",
+                              },
+                              "&:hover": {
+                                background: "rgba(255, 255, 255, 0.08)",
+                              },
                             }}
                           >
-                            {sub.icon}
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={sub.text}
-                            primaryTypographyProps={{
-                              fontSize: "13px",
-                              fontWeight: 400,
-                            }}
-                          />
-                        </ListItemButton>
-                      ))}
+                            <ListItemIcon
+                              sx={{
+                                color: "#94a3b8",
+                                minWidth: "28px",
+                                ".active &": { color: "#fff" },
+                              }}
+                            >
+                              {sub.icon}
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={sub.text}
+                              primaryTypographyProps={{
+                                fontSize: "13px",
+                                fontWeight: 400,
+                              }}
+                            />
+                          </ListItemButton>
+                        ))}
                     </List>
                   </Collapse>
                 </Box>

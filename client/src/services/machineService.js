@@ -26,6 +26,21 @@ export const getAreas = async () => {
   return res.data;
 };
 
+export const addArea = async (data) => {
+  const res = await api.post("/areas", data);
+  return res.data;
+};
+
+export const updateArea = async (id, payload) => {
+  const response = await api.put(`/areas/${id}`, payload);
+  return response.data;
+};
+
+export const deleteArea = async (id) => {
+  const response = await api.delete(`/areas/${id}`);
+  return response.data;
+};
+
 export const getMachineTypes = async () => {
   const res = await api.get("/machine-types");
   return res.data;

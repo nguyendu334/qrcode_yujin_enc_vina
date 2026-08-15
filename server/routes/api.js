@@ -2,7 +2,12 @@ const router = require("express").Router();
 const bcrypt = require("bcryptjs");
 const { pool } = require("../config/db");
 
-const { getAreas } = require("../controllers/areaCtrl.js");
+const {
+  getAreas,
+  addArea,
+  updateArea,
+  deleteArea,
+} = require("../controllers/areaCtrl.js");
 const {
   getCheckSheet,
   sendInfoCheckSheet,
@@ -19,7 +24,12 @@ const {
   deleteMachine,
   updateMachine,
 } = require("../controllers/machineCtrl.js");
-const { getMachineType, addMachineType, updateMachineType, deleteMachineType } = require("../controllers/machineTypeCtrl.js");
+const {
+  getMachineType,
+  addMachineType,
+  updateMachineType,
+  deleteMachineType,
+} = require("../controllers/machineTypeCtrl.js");
 
 const { verifyToken, checkRole } = require("../middleware/auth");
 const {
@@ -47,6 +57,9 @@ router.put("/machine-types/:id", verifyToken, updateMachineType);
 router.delete("/machine-types/:id", verifyToken, deleteMachineType);
 
 router.get("/areas", verifyToken, getAreas);
+router.post("/areas", verifyToken, addArea);
+router.put("/areas/:area_id", verifyToken, updateArea);
+router.delete("/areas/:area_id", verifyToken, deleteArea);
 
 router.get("/checksheet/machine-info", getCheckSheet);
 router.get("/inspections/check-duplicate", checkDuplicateChecksheet);
@@ -56,7 +69,7 @@ router.get("/inspection-headers", verifyToken, getInspectionHeader);
 router.get(
   "/inspection-details/:inspectionId",
   verifyToken,
-  getInspectionDetail
+  getInspectionDetail,
 );
 
 // user api
@@ -66,13 +79,13 @@ router.put(
   "/users/:user_id",
   verifyToken,
   checkRole(["manager", "admin"]),
-  updateUser
+  updateUser,
 );
 router.delete(
   "/users/:user_id",
   verifyToken,
   checkRole(["manager", "admin"]),
-  deleteUser
+  deleteUser,
 );
 
 router.put("/inspections/:id/approval", verifyToken, approveInspection);
