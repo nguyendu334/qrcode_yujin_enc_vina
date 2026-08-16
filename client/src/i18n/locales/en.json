@@ -7,7 +7,13 @@
     "report": "Report",
     "user": "User",
     "setting": "Setting",
-    "maintenance": "Maintenance Management"
+    "maintenance": "Maintenance Management",
+    "listMachine": "Equipment List",
+    "machineType": "Machine Type",
+    "area": "Machine Location",
+    "userList": "User List",
+    "department": "Department",
+    "role": "Roles & Permissions"
   },
   "machineTable": {
     "code": "Machine Code",
@@ -195,6 +201,32 @@
     "low": "Low (Repair within day)",
     "typing": "Enter inspector's name"
   },
+  "machineType": {
+    "header": "Machine Type Management",
+    "des": "List of machine and equipment types in the factory",
+    "addMachineType": "Add Machine Type",
+    "search": "Search by machine type name",
+    "stt": "No.",
+    "name": "Machine Type Name",
+    "approver": "Approver",
+    "frequency": "Inspection Frequency",
+    "description": "Description",
+    "action": "Actions",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "areaPage": {
+    "header": "Area Management",
+    "des": "List of work areas in the factory",
+    "addArea": "Add Area",
+    "search": "Search by area name",
+    "stt": "No.",
+    "name": "Area Name",
+    "department": "Department",
+    "action": "Actions",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
   "edit": "Edit",
   "delete": "Delete",
   "search": "Search .......",
@@ -204,6 +236,5 @@
   "login": "Login",
   "save": "Save",
   "back": "Back",
-
   "exportQR": "Export QR"
 }

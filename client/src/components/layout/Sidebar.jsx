@@ -49,18 +49,18 @@ const COLLAPSED_WIDTH = 80;
 // Submenu của Quản lý thiết bị
 const deviceSubItems = [
   {
-    text: "Danh sách thiết bị",
+    text: "sidebar.listMachine",
     path: "/machine",
     icon: <FormatListBulletedIcon fontSize="small" />,
   },
   {
-    text: "Kiểu máy",
+    text: "sidebar.machineType",
     path: "/machine-types",
     icon: <CategoryIcon fontSize="small" />,
     // roles: ["manager"],
   },
   {
-    text: "Khu vực đặt máy",
+    text: "sidebar.area",
     path: "/locations",
     icon: <LocationOnIcon fontSize="small" />,
   },
@@ -69,17 +69,17 @@ const deviceSubItems = [
 // 🌟 Submenu của Quản lý người dùng
 const userSubItems = [
   {
-    text: "Danh sách người dùng",
+    text: "sidebar.userList",
     path: "/user",
     icon: <PersonIcon fontSize="small" />,
   },
   {
-    text: "Phòng ban",
+    text: "sidebar.department",
     path: "/departments",
     icon: <LocalFireDepartmentIcon fontSize="small" />,
   },
   {
-    text: "Phân quyền & Vai trò",
+    text: "sidebar.role",
     path: "/user-roles",
     icon: <AdminPanelSettingsIcon fontSize="small" />,
   },
@@ -321,7 +321,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                               {sub.icon}
                             </ListItemIcon>
                             <ListItemText
-                              primary={sub.text}
+                              primary={t(sub.text)}
                               primaryTypographyProps={{
                                 fontSize: "13px",
                                 fontWeight: 400,

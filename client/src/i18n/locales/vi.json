@@ -7,7 +7,13 @@
     "report": "Báo cáo",
     "user": "Người dùng",
     "setting": "Cài đặt",
-    "maintenance": "Quản lý sự cố và bảo trì"
+    "maintenance": "Quản lý sự cố và bảo trì",
+    "listMachine": "Danh sách thiết bị",
+    "machineType": "Kiểu máy",
+    "area": "Khu vực đặt máy",
+    "userList": "Danh sách người dùng",
+    "department": "Phòng ban",
+    "role": "Phân quyền & Vai trò"
   },
   "machineTable": {
     "code": "Mã máy",
@@ -194,6 +200,32 @@
     "high": "Khẩn cấp (Dừng máy cần sửa ngay)",
     "low": "Thấp (Sửa trong ngày)",
     "typing": "Nhập tên người kiểm tra"
+  },
+  "machineType": {
+    "header": "Quản lý phân loại máy",
+    "des": "Danh sách loại máy/thiết bị trong nhà xưởng",
+    "addMachineType": "Thêm kiểu máy",
+    "search": "Tìm kiếm theo tên kiểu máy",
+    "stt": "STT",
+    "name": "Tên kiểu máy",
+    "approver": "Người phê duyệt",
+    "frequency": "Tần suất kiểm tra",
+    "description": "Mô tả",
+    "action": "Thao tác",
+    "edit": "Sửa",
+    "delete": "Xoá"
+  },
+  "areaPage": {
+    "header": "Quản lý khu vực",
+    "des": "Danh sách khu vực làm việc trong nhà xưởng",
+    "addArea": "Thêm khu vực",
+    "search": "Tìm kiếm theo tên khu vực",
+    "stt": "STT",
+    "name": "Tên khu vực",
+    "department": "Bộ phận",
+    "action": "Thao tác",
+    "edit": "Sửa",
+    "delete": "Xoá"
   },
   "edit": "Sửa",
   "delete": "Xoá",

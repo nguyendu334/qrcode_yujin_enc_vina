@@ -7,7 +7,13 @@
     "report": "보고서",
     "user": "사용자",
     "setting": "환경",
-    "maintenance": "유지보수 관리"
+    "maintenance": "유지보수 관리",
+    "listMachine": "설비 목록",
+    "machineType": "설비 유형",
+    "area": "설비 설치 구역",
+    "userList": "사용자 목록",
+    "department": "부서",
+    "role": "권한 및 역할"
   },
   "machineTable": {
     "code": "설비 코드",
@@ -195,6 +201,32 @@
     "high": "긴급 (설비 정지 - 즉시 수리 필요)",
     "low": "낮음 (당일 내 수리)",
     "typing": "점검자 이름 입력"
+  },
+  "machineType": {
+    "header": "설비 유형 관리",
+    "des": "공장 내 설비 및 장비 유형 목록",
+    "addMachineType": "설비 유형 추가",
+    "search": "설비 유형 이름으로 검색",
+    "stt": "No.",
+    "name": "설비 유형명",
+    "approver": "승인자",
+    "frequency": "점검 주기",
+    "description": "설명",
+    "action": "작업",
+    "edit": "수정",
+    "delete": "삭제"
+  },
+  "areaPage": {
+    "header": "구역 관리",
+    "des": "공장 내 작업 구역 목록",
+    "addArea": "구역 추가",
+    "search": "구역 이름으로 검색",
+    "stt": "No.",
+    "name": "구역명",
+    "department": "부서",
+    "action": "작업",
+    "edit": "수정",
+    "delete": "삭제"
   },
   "edit": "수정",
   "delete": "삭제",

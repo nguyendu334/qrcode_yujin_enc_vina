@@ -31,6 +31,8 @@ import { toast } from "react-toastify";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 
+import { useTranslation } from "react-i18next";
+
 import {
   addMachineType,
   deleteMachineType,
@@ -54,6 +56,8 @@ export default function MachineType() {
     approver_id: "",
   });
   const [errors, setErrors] = useState({});
+
+  const { t } = useTranslation();
 
   // 1. Gọi API lấy danh sách kiểu máy và danh sách người dùng khi component render
   useEffect(() => {
@@ -87,7 +91,7 @@ export default function MachineType() {
 
   // Tìm kiếm theo tên kiểu máy
   const filteredTypes = deviceTypes.filter((item) =>
-    item.machine_type_name?.toLowerCase().includes(searchTerm.toLowerCase()),
+    item.machine_type_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleOpenDialog = (item = null) => {
@@ -155,7 +159,7 @@ export default function MachineType() {
     } catch (error) {
       console.error("Lỗi khi lưu kiểu máy:", error);
       toast.error(
-        error?.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!",
+        error?.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!"
       );
     }
   };
@@ -172,7 +176,7 @@ export default function MachineType() {
         console.error("Lỗi khi xóa kiểu máy:", error);
         toast.error(
           error?.response?.data?.error ||
-            "Không thể xóa kiểu máy, vui lòng thử lại!",
+            "Không thể xóa kiểu máy, vui lòng thử lại!"
         );
       }
     }
@@ -191,10 +195,10 @@ export default function MachineType() {
       >
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700, color: "#1e293b" }}>
-            Quản lý Kiểu máy
+          {t("machineType.header")}
           </Typography>
           <Typography variant="body2" sx={{ color: "#64748b", mt: 0.5 }}>
-            Danh sách loại máy/thiết bị trong hệ thống
+          {t("machineType.des")}
           </Typography>
         </Box>
 
@@ -212,7 +216,7 @@ export default function MachineType() {
             "&:hover": { backgroundColor: "#4338ca" },
           }}
         >
-          Thêm kiểu máy
+          {t("machineType.addMachineType")}
         </Button>
       </Box>
 
@@ -226,7 +230,7 @@ export default function MachineType() {
         }}
       >
         <TextField
-          placeholder="Tìm kiếm theo tên kiểu máy..."
+          placeholder={t("machineType.search")}
           size="small"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -253,28 +257,28 @@ export default function MachineType() {
                 align="center"
                 sx={{ fontWeight: 600, color: "#475569", width: "100px" }}
               >
-                STT
+                {t("machineType.stt")}
               </TableCell>
               <TableCell sx={{ fontWeight: 600, color: "#475569" }}>
-                Tên kiểu máy
+              {t("machineType.name")}
               </TableCell>
               <TableCell sx={{ fontWeight: 600, color: "#475569" }}>
-                Người phê duyệt
+              {t("machineType.approver")}
               </TableCell>
               <TableCell sx={{ fontWeight: 600, color: "#475569" }}>
-                Tần suất kiểm tra
+              {t("machineType.frequency")}
               </TableCell>
               <TableCell
                 align="center"
                 sx={{ fontWeight: 600, color: "#475569" }}
               >
-                Mô tả
+                {t("machineType.description")}
               </TableCell>
               <TableCell
                 align="center"
                 sx={{ fontWeight: 600, color: "#475569", width: "250px" }}
               >
-                Thao tác
+                {t("machineType.action")}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -328,7 +332,7 @@ export default function MachineType() {
                         (e.currentTarget.style.backgroundColor = "#fff")
                       }
                     >
-                      ✏️ Sửa
+                      ✏️ {t("machineType.edit")}
                     </Button>
                     <Button
                       onClick={() => handleDelete(row.machine_type_id)}
@@ -347,7 +351,7 @@ export default function MachineType() {
                         (e.currentTarget.style.backgroundColor = "#fff")
                       }
                     >
-                      ❌ Xoá
+                      ❌ {t("machineType.delete")}
                     </Button>
                   </TableCell>
                 </TableRow>

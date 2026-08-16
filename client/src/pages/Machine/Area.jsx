@@ -29,7 +29,14 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 
-import { addArea, deleteArea, getAreas, updateArea } from "../../services/machineService";
+import { useTranslation } from "react-i18next";
+
+import {
+  addArea,
+  deleteArea,
+  getAreas,
+  updateArea,
+} from "../../services/machineService";
 
 // Dữ liệu mẫu danh sách bộ phận (dùng chọn department_id)
 const departmentsList = [
@@ -53,6 +60,8 @@ export default function Area() {
   });
   const [errors, setErrors] = useState({});
 
+  const { t } = useTranslation();
+
   useEffect(() => {
     fetchAreas();
   }, []);
@@ -73,7 +82,7 @@ export default function Area() {
 
   // Tìm kiếm theo tên khu vực
   const filteredAreas = areas.filter((item) =>
-    item.area_name?.toLowerCase().includes(searchTerm.toLowerCase()),
+    item.area_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleOpenDialog = (item = null) => {
@@ -128,7 +137,7 @@ export default function Area() {
     } catch (error) {
       console.error("Lỗi khi lưu khu vực:", error);
       toast.error(
-        error?.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!",
+        error?.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!"
       );
     }
   };
@@ -145,7 +154,7 @@ export default function Area() {
         console.error("Lỗi khi xóa khu vực:", error);
         toast.error(
           error?.response?.data?.error ||
-            "Không thể xóa khu vực, vui lòng thử lại!",
+            "Không thể xóa khu vực, vui lòng thử lại!"
         );
       }
     }
@@ -164,10 +173,10 @@ export default function Area() {
       >
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700, color: "#1e293b" }}>
-            Quản lý Khu vực
+            {t("areaPage.header")}
           </Typography>
           <Typography variant="body2" sx={{ color: "#64748b", mt: 0.5 }}>
-            Danh sách các khu vực làm việc/nhà xưởng
+            {t("areaPage.des")}
           </Typography>
         </Box>
 
@@ -185,7 +194,7 @@ export default function Area() {
             "&:hover": { backgroundColor: "#4338ca" },
           }}
         >
-          Thêm khu vực
+          {t("areaPage.addArea")}
         </Button>
       </Box>
 
@@ -199,7 +208,7 @@ export default function Area() {
         }}
       >
         <TextField
-          placeholder="Tìm kiếm theo tên khu vực..."
+          placeholder={t("areaPage.search")}
           size="small"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -226,19 +235,19 @@ export default function Area() {
                 align="center"
                 sx={{ fontWeight: 600, color: "#475569", width: "100px" }}
               >
-                STT
+                {t("areaPage.stt")}
               </TableCell>
               <TableCell sx={{ fontWeight: 600, color: "#475569" }}>
-                Tên khu vực
+                {t("areaPage.name")}
               </TableCell>
               <TableCell sx={{ fontWeight: 600, color: "#475569" }}>
-                Bộ phận
+                {t("areaPage.department")}
               </TableCell>
               <TableCell
                 align="center"
                 sx={{ fontWeight: 600, color: "#475569", width: "250px" }}
               >
-                Thao tác
+                {t("areaPage.action")}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -286,7 +295,7 @@ export default function Area() {
                         (e.currentTarget.style.backgroundColor = "#fff")
                       }
                     >
-                      ✏️ Sửa
+                      ✏️ {t("areaPage.edit")}
                     </Button>
                     <Button
                       onClick={() => handleDelete(row.area_id)}
@@ -305,7 +314,7 @@ export default function Area() {
                         (e.currentTarget.style.backgroundColor = "#fff")
                       }
                     >
-                      ❌ Xoá
+                      ❌ {t("areaPage.delete")}
                     </Button>
                   </TableCell>
                 </TableRow>
