@@ -49,8 +49,9 @@
     "OQC": "OQC",
     "IQC": "IQC",
     "Kho TP": "Kho TP",
-    "Kho NVL": "Kho NVL",
-    "Văn phòng 1": "Văn phòng tầng 1"
+    "KHO": "KHO",
+    "Văn phòng 1": "Văn phòng tầng 1",
+    "KHO TECH": "KHO TECH"
   },
   "user": {
     "username": "Tên tài khoản",
@@ -82,7 +83,8 @@
     "IQC": "IQC",
     "Kho TP": "Kho TP",
     "Kho NVL": "Kho NVL",
-    "Văn phòng 1": "Văn phòng tầng 1"
+    "Văn phòng 1": "Văn phòng tầng 1",
+    "KHO TECH": "KHO TECH"
   },
   "history": {
     "title": "Lịch sử kiểm tra thiết bị",

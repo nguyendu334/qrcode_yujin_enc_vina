@@ -27,7 +27,7 @@ export default function MachinePage() {
   const [machineTypes, setMachineTypes] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(30);
   const [selectedQRMachine, setSelectedQRMachine] = useState(null);
 
   const fetchMachines = async () => {
@@ -195,7 +195,7 @@ export default function MachinePage() {
         onPageChange={handleChangePage}
         rowsPerPage={rowsPerPage}
         onRowsPerPageChange={handleChangeRowsPerPage}
-        rowsPerPageOptions={[10, 20, 50]}
+        rowsPerPageOptions={[30, 50, 70, 100]}
       />
 
       <Box>
