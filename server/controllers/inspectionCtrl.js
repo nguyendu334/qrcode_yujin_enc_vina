@@ -1,12 +1,23 @@
 const { pool } = require("../config/db");
 
+// Lấy theo người phê duyệt
 // const getInspectionHeader = async (req, res) => {
 //   try {
 //     const { fromDate, toDate, machineId, shift } = req.query;
+//     const loggedInApproverId =
+//       req.user?.id || req.user?.user_id || req.query.userId;
+//     const role = req.user?.role || req.query.role; // Lấy role người dùng
 
-//     // Câu lệnh SQL JOIN giữa inspection_header và machine
+//     if (!loggedInApproverId && !role) {
+//       return res
+//         .status(401)
+//         .json({ success: false, message: "Bạn cần đăng nhập để xem dữ liệu!" });
+//     }
+
+//     const isManager = role === "manager";
+
 //     let sql = `
-//         SELECT
+//         SELECT DISTINCT
 //           h.inspection_id AS "id",
 //           m.machine_code AS "machineCode",
 //           m.machine_name AS "machineName",
@@ -15,16 +26,26 @@ const { pool } = require("../config/db");
 //           h.inspection_date AS "date",
 //           h.approval_status,
 //           h.approver_id,
-//           u.full_name AS "approver_name" -- 🌟 Lấy thêm tên đầy đủ của người duyệt
+//           u.full_name AS "approver_name"
 //         FROM inspection_header h
 //         LEFT JOIN machine m ON h.machine_id = m.machine_id
-//         LEFT JOIN users u ON h.approver_id = u.user_id -- 🌟 JOIN với bảng users qua approver_id (Sửa u.id thành cột ID của bảng user nếu khác)
+//         LEFT JOIN users u ON h.approver_id = u.user_id
+//         LEFT JOIN machine_type mt ON m.machine_type_id = mt.machine_type_id
+//         LEFT JOIN checklist_template ct ON mt.machine_type_id = ct.machine_type_id
 //         WHERE 1=1
 //       `;
+
 //     const params = [];
 //     let paramIndex = 1;
 
-//     // Xử lý bộ lọc tìm kiếm
+//     // 🌟 Nếu KHÔNG PHẢI Manager/Admin thì mới lọc theo approver_id
+//     if (!isManager) {
+//       sql += ` AND ct.approver_id = $${paramIndex}`;
+//       params.push(loggedInApproverId);
+//       paramIndex++;
+//     }
+
+//     // Xử lý các bộ lọc tìm kiếm
 //     if (fromDate) {
 //       sql += ` AND h.inspection_date >= $${paramIndex}`;
 //       params.push(`${fromDate} 00:00:00`);
@@ -45,30 +66,31 @@ const { pool } = require("../config/db");
 //       params.push(shift);
 //       paramIndex++;
 //     }
+
 //     sql += ` ORDER BY h.inspection_date DESC`;
 
 //     const result = await pool.query(sql, params);
 //     res.json({ success: true, data: result.rows });
 //   } catch (error) {
+//     console.error("Lỗi getInspectionHeader:", error.message);
 //     res.status(500).json({ success: false, message: error.message });
 //   }
 // };
 
-// Lấy theo người phê duyệt
 const getInspectionHeader = async (req, res) => {
   try {
     const { fromDate, toDate, machineId, shift } = req.query;
-    const loggedInApproverId =
-      req.user?.id || req.user?.user_id || req.query.userId;
-    const role = req.user?.role || req.query.role; // Lấy role người dùng
 
-    if (!loggedInApproverId && !role) {
+    const loggedInUserId =
+      req.user?.id || req.user?.user_id || req.query.userId;
+    const role = (req.user?.role || req.query.role || "").toLowerCase();
+    const userDepartmentId = req.user?.department_id ?? req.query.departmentId;
+
+    if (!loggedInUserId && !role) {
       return res
         .status(401)
         .json({ success: false, message: "Bạn cần đăng nhập để xem dữ liệu!" });
     }
-
-    const isManager = role === "manager";
 
     let sql = `
         SELECT DISTINCT
@@ -84,22 +106,43 @@ const getInspectionHeader = async (req, res) => {
         FROM inspection_header h
         LEFT JOIN machine m ON h.machine_id = m.machine_id
         LEFT JOIN users u ON h.approver_id = u.user_id
-        LEFT JOIN machine_type mt ON m.machine_type_id = mt.machine_type_id
-        LEFT JOIN checklist_template ct ON mt.machine_type_id = ct.machine_type_id
         WHERE 1=1
       `;
 
     const params = [];
     let paramIndex = 1;
 
-    // 🌟 Nếu KHÔNG PHẢI Manager/Admin thì mới lọc theo approver_id
-    if (!isManager) {
-      sql += ` AND ct.approver_id = $${paramIndex}`;
-      params.push(loggedInApproverId);
+    // -------------------------------------------------------------------------
+    // LOGIC PHÂN QUYỀN
+    // -------------------------------------------------------------------------
+
+    // 1. MANAGER: Xem tất cả toàn bộ công ty (Không thêm điều kiện lọc)
+    if (role === "manager") {
+      // No filter needed
+    }
+    // 2. TRƯỞNG BỘ PHẬN: Xem tất cả phiếu thuộc bộ phận của mình
+    else if (
+      role === "head" ||
+      role === "supervisor" ||
+      role === "manager_dept"
+    ) {
+      if (userDepartmentId) {
+        sql += ` AND m.department_id = $${paramIndex}`;
+        params.push(userDepartmentId);
+        paramIndex++;
+      } else {
+        // 🌟 Nếu không tìm thấy department_id của User này, chặn không cho trả về tất cả
+        return res.json({ success: true, data: [] });
+      }
+    }
+    // 3. TỔ TRƯỞNG & CÁC VAI TRÒ KHÁC (leader / operator...): Chỉ xem phiếu của chính mình
+    else {
+      sql += ` AND (h.approver_id = $${paramIndex} OR h.inspector = (SELECT full_name FROM users WHERE user_id = $${paramIndex}))`;
+      params.push(loggedInUserId);
       paramIndex++;
     }
 
-    // Xử lý các bộ lọc tìm kiếm
+    // Các bộ lọc tìm kiếm nâng cao (Ngày, Máy, Ca)
     if (fromDate) {
       sql += ` AND h.inspection_date >= $${paramIndex}`;
       params.push(`${fromDate} 00:00:00`);
@@ -142,15 +185,13 @@ const getInspectionDetail = async (req, res) => {
         .json({ success: false, message: "ID không hợp lệ" });
     }
 
-    // 2. Chuyển sang câu SELECT tối giản (Không JOIN vội) để test xem có chạy được không
-    // Nếu câu này chạy thành công, chứng tỏ lỗi 500 trước đó là do sai tên cột ở bảng checklist_item
     const sql = `
         SELECT 
     d.detail_id AS "id",
     d.inspection_id,
     d.item_id,
-    c.item_name AS "item",       -- Thử lấy tên hạng mục
-    c.standard_value AS "standard",    -- Thử lấy tiêu chuẩn quản lý
+    c.item_name AS "item",
+    c.standard_value AS "standard", 
     d.result,
     d.value,
     d.remark,
@@ -167,7 +208,6 @@ const getInspectionDetail = async (req, res) => {
     const result = await pool.query(sql, [inspectionId]);
     res.json({ success: true, data: result.rows });
   } catch (error) {
-    // In trực tiếp nguyên nhân lỗi ra terminal backend để bạn dễ nhìn lý do cụ thể
     console.error("❌ LỖI API DETAILS:", error.message);
     res.status(500).json({ success: false, message: error.message });
   }

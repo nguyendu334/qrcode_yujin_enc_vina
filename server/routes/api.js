@@ -12,6 +12,7 @@ const {
   getCheckSheet,
   sendInfoCheckSheet,
   checkDuplicateChecksheet,
+  getApproversByMachine,
 } = require("../controllers/checksheetCtrl.js");
 const {
   getInspectionHeader,
@@ -64,12 +65,13 @@ router.delete("/areas/:area_id", verifyToken, deleteArea);
 router.get("/checksheet/machine-info", getCheckSheet);
 router.get("/inspections/check-duplicate", checkDuplicateChecksheet);
 router.post("/checksheet/submit", sendInfoCheckSheet);
+router.get("/approvers/by-machine/:machineId", getApproversByMachine);
 
 router.get("/inspection-headers", verifyToken, getInspectionHeader);
 router.get(
   "/inspection-details/:inspectionId",
   verifyToken,
-  getInspectionDetail,
+  getInspectionDetail
 );
 
 // user api
@@ -79,13 +81,13 @@ router.put(
   "/users/:user_id",
   verifyToken,
   checkRole(["manager", "admin"]),
-  updateUser,
+  updateUser
 );
 router.delete(
   "/users/:user_id",
   verifyToken,
   checkRole(["manager", "admin"]),
-  deleteUser,
+  deleteUser
 );
 
 router.put("/inspections/:id/approval", verifyToken, approveInspection);

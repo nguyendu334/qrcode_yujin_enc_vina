@@ -35,7 +35,7 @@ export default function InspectionHistory() {
 
   // Quản lý phân trang bảng trên (Tối đa 5 dòng)
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 15;
 
   // 1. FETCH DANH SÁCH MÁY
   useEffect(() => {

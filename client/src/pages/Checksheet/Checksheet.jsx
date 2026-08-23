@@ -13,6 +13,29 @@ import api from "../../helper/api";
 import { Button } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
+// const getCurrentShift = () => {
+//   const hours = new Date().getHours();
+//   // Khung giờ từ 08:00 đến 19:59 là Ca ngày, còn lại là Ca đêm
+//   if (hours >= 8 && hours < 20) {
+//     return "Ca ngày";
+//   }
+//   return "Ca đêm";
+// };
+
+const getCurrentShift = () => {
+  const searchParams = new URLSearchParams(window.location.search);
+  const mockHour = searchParams.get("mockHour");
+
+  // Nếu trên URL có &mockHour=21 thì lấy 21h, không thì lấy giờ thật của máy
+  const hours =
+    mockHour !== null ? parseInt(mockHour, 10) : new Date().getHours();
+
+  if (hours >= 8 && hours < 20) {
+    return "Ca ngày";
+  }
+  return "Ca đêm";
+};
+
 function ChecksheetPage() {
   const location = useLocation();
 
@@ -25,30 +48,33 @@ function ChecksheetPage() {
 
   // State form thông tin chung (Header)
   const [inspector, setInspector] = useState("");
-  const [shift, setShift] = useState("");
+  const [shift, setShift] = useState(getCurrentShift());
   const [currentTime, setCurrentTime] = useState("");
-
-  // State lưu kết quả động: { [item_id]: { type: 'OKNG'/'TEXT', value: '' } }
   const [results, setResults] = useState({});
+
+  const [approvers, setApprovers] = useState([]);
+  const [selectedApproverId, setSelectedApproverId] = useState("");
 
   const { t } = useTranslation();
 
   useEffect(() => {
-    // 1. Đồng bộ thời gian thực tế hiển thị trên form
+    // 1. Đồng bộ thời gian thực tế hiển thị trên form và tự cập nhật Ca
     const now = new Date();
     const formattedTime = now.toISOString();
     setCurrentTime(formattedTime);
+
+    const autoShift = getCurrentShift();
+    setShift(autoShift);
 
     // 2. Bóc tách query param "?machine=..." từ link QR
     const searchParams = new URLSearchParams(location.search);
     const machineId = searchParams.get("machine");
 
-    // Hàm phụ trợ dùng để check trùng lặp (Lấy ngày YYYY-MM-DD từ biến now ở trên)
+    // Hàm phụ trợ kiểm tra trùng lặp
     const verifyDuplicate = async (mId, currentShift) => {
       try {
-        const todayStr = new Date().toISOString().split("T")[0]; // Định dạng YYYY-MM-DD
+        const todayStr = new Date().toISOString().split("T")[0];
 
-        // Bổ sung param `shift` gửi lên backend
         const res = await api.get("/inspections/check-duplicate", {
           params: {
             machine_id: mId,
@@ -64,16 +90,15 @@ function ChecksheetPage() {
     };
 
     if (machineId) {
-      // 🌟 GỌI CHECK TRÙNG SONG SONG HOẶC NGAY KHI CÓ MACHINE_ID
-      verifyDuplicate(machineId, shift);
+      // 🌟 CHECK TRÙNG LẶP THEO CA ĐÃ TỰ ĐỘNG TÍNH
+      verifyDuplicate(machineId, autoShift);
 
-      // Gọi API Backend lấy thông tin máy và bộ checklist_item đi kèm
+      // Gọi API Backend lấy thông tin máy và bộ checklist_item
       getChecksheet(machineId)
         .then((res) => {
           setMachine(res.machine);
           setChecklistItems(res.checklistItems);
 
-          // Khởi tạo trạng thái lưu trữ kèm phân loại item_type để gom payload chuẩn xác
           const initialResults = {};
           res.checklistItems.forEach((item) => {
             initialResults[item.item_id] = { type: item.item_type, value: "" };
@@ -84,10 +109,21 @@ function ChecksheetPage() {
         .catch((err) => {
           setError(
             err.response?.data?.error ||
-              "Không thể tải cấu hình hạng mục cho thiết bị này.",
+              "Không thể tải cấu hình hạng mục cho thiết bị này."
           );
           setLoading(false);
         });
+
+      api
+        .get(`/approvers/by-machine/${machineId}`)
+        .then((res) => {
+          setApprovers(res.data);
+          // Nếu bộ phận chỉ có đúng 1 người duyệt, tự động chọn sẵn
+          if (res.data.length === 1) {
+            setSelectedApproverId(res.data[0].user_id);
+          }
+        })
+        .catch((err) => console.error("Lỗi lấy người duyệt:", err));
     } else {
       setError("Quét mã QR để nhận diện Checksheet.");
       setLoading(false);
@@ -102,7 +138,7 @@ function ChecksheetPage() {
     }));
   };
 
-  // Xử lý sự kiện nhập chữ tự do cho ô TEXT (Mục Remark)
+  // Xử lý sự kiện nhập chữ tự do cho ô TEXT
   const handleTextChange = (itemId, textValue) => {
     setResults((prev) => ({
       ...prev,
@@ -110,9 +146,14 @@ function ChecksheetPage() {
     }));
   };
 
-  // Gửi toàn bộ dữ liệu kiểm tra lên Server (Lưu song song Header & Detail)
+  // Gửi toàn bộ dữ liệu kiểm tra lên Server
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!selectedApproverId) {
+      toast.warning("Vui lòng chọn Người phê duyệt!");
+      return;
+    }
 
     if (isDuplicate) {
       toast.error("Thiết bị này đã được kiểm tra. Không thể nộp thêm!");
@@ -123,14 +164,8 @@ function ChecksheetPage() {
       toast.warning("Vui lòng nhập họ tên Người kiểm tra!");
       return;
     }
-    if (!shift) {
-      toast.warning("Vui lòng chọn Ca làm việc!");
-      return;
-    }
 
-    // ========================================================
-    // LOGIC CHUẨN HÓA DỮ LIỆU ĐẦU RA (Tách biệt result và value)
-    // ========================================================
+    // Chuẩn hóa dữ liệu kết quả kiểm tra
     const formattedDetails = checklistItems.map((item) => {
       const userValue = results[item.item_id]?.value;
       const remarkValue = results[item.item_id]?.remark || null;
@@ -139,11 +174,9 @@ function ChecksheetPage() {
       let valueField = null;
 
       if (item.item_type === "OKNG" || item.item_type === "OK_NG") {
-        // Loại OKNG: Chỉ lưu vào cột result, cột value để null
         resultField = userValue || "OK";
         valueField = null;
       } else {
-        // Loại nhập số/chữ: Chỉ lưu vào cột value, cột result để null
         resultField = null;
         valueField = userValue !== undefined ? userValue : "";
       }
@@ -156,46 +189,39 @@ function ChecksheetPage() {
       };
     });
 
-    // Khối Payload mới gửi lên Backend
     const payload = {
       machine_id: machine.machine_id,
       inspector: inspector,
       inspection_date: currentTime,
-      shift: shift,
+      shift: shift, // 🌟 Gửi Ca tự động
       check_results: formattedDetails,
-      approver_id: machine.approver_id,
+      // approver_id: machine.approver_id,
+      approver_id: selectedApproverId,
     };
+    setSelectedApproverId("");
 
     try {
-      // 🌟 BỔ SUNG 2: Thêm "await" để đợi Backend xử lý xong và phản hồi
       await sendInfoChecksheet(payload);
 
       toast.success("Đã lưu dữ liệu vào hệ thống Inspection thành công!");
 
-      // Sau khi nộp thành công, cập nhật ngay trạng thái trùng lặp để khóa nút luôn
       setIsDuplicate(true);
 
-      // ========================================================
-      // LOGIC XÓA TRƯỜNG DỮ LIỆU VỪA NHẬP SAU KHI HOÀN THÀNH
-      // ========================================================
-      setInspector(""); // Xóa trắng tên người kiểm tra
-      setShift(""); // Đưa ca làm việc về mặc định "Chọn ca"
+      setInspector("");
 
-      // Reset toàn bộ kết quả đã chọn hoặc nhập trên bảng về rỗng
+      // Reset toàn bộ kết quả về mặc định
       const resetResults = {};
       checklistItems.forEach((item) => {
         resetResults[item.item_id] = { type: item.item_type, value: "" };
       });
       setResults(resetResults);
 
-      // Cập nhật lại mốc thời gian mới cho lượt kiểm tra tiếp theo
       const now = new Date();
       setCurrentTime(now.toISOString());
     } catch (err) {
-      // Nếu API trả về lỗi (Ví dụ: Trùng lịch, lỗi DB...), code nhảy vào đây và KHÔNG reset form
       console.error("Lỗi gửi dữ liệu checksheet:", err);
       toast.error(
-        "Lỗi nộp phiếu: " + (err.response?.data?.error || err.message),
+        "Lỗi nộp phiếu: " + (err.response?.data?.error || err.message)
       );
     }
   };
@@ -242,7 +268,7 @@ function ChecksheetPage() {
       >
         {t("back")}
       </Button>
-      {/* TIÊU ĐỀ BIẾN ĐỔI ĐỘNG */}
+
       <h2
         style={{
           textAlign: "center",
@@ -269,16 +295,19 @@ function ChecksheetPage() {
         currentTime={currentTime}
         shift={shift}
         setShift={setShift}
+        disabledShift={true} // 🌟 Khóa không cho phép sửa Ca
+        approvers={approvers} // 🌟 Truyền danh sách người duyệt
+        selectedApproverId={selectedApproverId} // 🌟 Truyền ID được chọn
+        setSelectedApproverId={setSelectedApproverId} // 🌟 Hàm cập nhật
       />
 
-      {/* BẢNG RENDER HẠNG MỤC TỰ ĐỘNG ĐỔI GIAO DIỆN */}
       <ChecklistItem
         checklistItems={checklistItems}
         handleStatusChange={handleStatusChange}
         results={results}
         handleTextChange={handleTextChange}
       />
-      {/* NÚT HOÀN THÀNH */}
+
       {checklistItems.length > 0 && (
         <FooterSubmit handleSubmit={handleSubmit} isDuplicate={isDuplicate} />
       )}
