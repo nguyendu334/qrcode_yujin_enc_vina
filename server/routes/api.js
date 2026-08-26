@@ -46,7 +46,13 @@ const {
   getTickets,
   updateTicketStatus,
 } = require("../controllers/ticketCtrl.js");
-const { getItemsByTemplate, createItem, updateItem, deleteItem, getChecklistTemplates } = require("../controllers/checklistItemCtrl.js");
+const {
+  getItemsByTemplate,
+  createItem,
+  updateItem,
+  deleteItem,
+  getChecklistTemplates,
+} = require("../controllers/checklistItemCtrl.js");
 
 router.get("/machines", verifyToken, getMachines);
 router.post("/machines", verifyToken, addMachine);
@@ -82,8 +88,18 @@ router.get(
 );
 
 // user api
-router.get("/users", verifyToken, checkRole(["manager", "admin", "head"]), getUesrs);
-router.post("/users", verifyToken, checkRole(["manager", "admin", "head"]), addUser);
+router.get(
+  "/users",
+  verifyToken,
+  checkRole(["manager", "admin", "head"]),
+  getUesrs
+);
+router.post(
+  "/users",
+  verifyToken,
+  checkRole(["manager", "admin", "head"]),
+  addUser
+);
 router.put(
   "/users/:user_id",
   verifyToken,
@@ -101,7 +117,7 @@ router.put("/inspections/:id/approval", verifyToken, approveInspection);
 
 router.get("/reports/monthly", getMonthlyReport);
 
-router.get("/dashboard/stats", getDashboardStats);
+router.get("/dashboard/stats", verifyToken, getDashboardStats);
 
 router.post("/tickets", createTicket);
 router.get("/tickets", verifyToken, getTickets);
