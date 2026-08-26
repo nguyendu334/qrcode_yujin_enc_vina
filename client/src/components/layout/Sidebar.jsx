@@ -33,6 +33,7 @@ import GroupIcon from "@mui/icons-material/Group";
 import SettingsIcon from "@mui/icons-material/Settings";
 
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
+import TypeSpecimenIcon from "@mui/icons-material/TypeSpecimen";
 import CategoryIcon from "@mui/icons-material/Category";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
@@ -52,12 +53,13 @@ const deviceSubItems = [
     text: "sidebar.listMachine",
     path: "/machine",
     icon: <FormatListBulletedIcon fontSize="small" />,
+    roles: ["manager", "head"],
   },
   {
     text: "sidebar.machineType",
     path: "/machine-types",
-    icon: <CategoryIcon fontSize="small" />,
-    // roles: ["manager"],
+    icon: <TypeSpecimenIcon fontSize="small" />,
+    roles: ["manager", "head"],
   },
   {
     text: "Hạng mục kiểm tra",
@@ -69,6 +71,7 @@ const deviceSubItems = [
     text: "sidebar.area",
     path: "/locations",
     icon: <LocationOnIcon fontSize="small" />,
+    roles: ["manager", "head"],
   },
 ];
 
