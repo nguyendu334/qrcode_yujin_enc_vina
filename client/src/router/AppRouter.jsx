@@ -17,6 +17,7 @@ import CreateTicket from "../pages/Ticket/CreateTicket";
 import MaintenanceManagement from "../pages/Ticket/MaintenanceManagement";
 import MachineTypePage from "../pages/Machine/MachineType";
 import Area from "../pages/Machine/Area";
+import Category from "../pages/Machine/Category/Category";
 
 export default function AppRouter() {
   return (
@@ -37,6 +38,7 @@ export default function AppRouter() {
 
           <Route path="/machine" element={<Machine />} />
           <Route path="/machine-types" element={<MachineTypePage />} />
+          <Route path="/category" element={<Category />} />
           <Route path="/locations" element={<Area />} />
 
           <Route path="/history" element={<History />} />

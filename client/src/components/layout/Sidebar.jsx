@@ -60,6 +60,12 @@ const deviceSubItems = [
     // roles: ["manager"],
   },
   {
+    text: "Hạng mục kiểm tra",
+    path: "/category",
+    icon: <CategoryIcon fontSize="small" />,
+    roles: ["manager", "head"],
+  },
+  {
     text: "sidebar.area",
     path: "/locations",
     icon: <LocationOnIcon fontSize="small" />,

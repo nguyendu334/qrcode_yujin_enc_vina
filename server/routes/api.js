@@ -46,6 +46,7 @@ const {
   getTickets,
   updateTicketStatus,
 } = require("../controllers/ticketCtrl.js");
+const { getItemsByTemplate, createItem, updateItem, deleteItem, getChecklistTemplates } = require("../controllers/checklistItemCtrl.js");
 
 router.get("/machines", verifyToken, getMachines);
 router.post("/machines", verifyToken, addMachine);
@@ -56,6 +57,12 @@ router.get("/machine-types", verifyToken, getMachineType);
 router.post("/machine-types", verifyToken, addMachineType);
 router.put("/machine-types/:id", verifyToken, updateMachineType);
 router.delete("/machine-types/:id", verifyToken, deleteMachineType);
+
+router.get("/checklist-templates", getChecklistTemplates);
+router.get("/checklist-items/template/:templateId", getItemsByTemplate);
+router.post("/checklist-items", createItem);
+router.put("/checklist-items/:itemId", updateItem);
+router.delete("/checklist-items/:itemId", deleteItem);
 
 router.get("/areas", verifyToken, getAreas);
 router.post("/areas", verifyToken, addArea);
