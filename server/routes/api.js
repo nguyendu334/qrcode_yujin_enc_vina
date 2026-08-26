@@ -82,18 +82,18 @@ router.get(
 );
 
 // user api
-router.get("/users", verifyToken, checkRole(["manager", "admin"]), getUesrs);
-router.post("/users", verifyToken, checkRole(["manager", "admin"]), addUser);
+router.get("/users", verifyToken, checkRole(["manager", "admin", "head"]), getUesrs);
+router.post("/users", verifyToken, checkRole(["manager", "admin", "head"]), addUser);
 router.put(
   "/users/:user_id",
   verifyToken,
-  checkRole(["manager", "admin"]),
+  checkRole(["manager", "admin", "head"]),
   updateUser
 );
 router.delete(
   "/users/:user_id",
   verifyToken,
-  checkRole(["manager", "admin"]),
+  checkRole(["manager", "admin", "head"]),
   deleteUser
 );
 
