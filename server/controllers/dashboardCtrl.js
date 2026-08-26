@@ -2,79 +2,96 @@ const { pool } = require("../config/db");
 
 const getDashboardStats = async (req, res) => {
   try {
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const userDepartmentId = req.user?.department_id || req.query.departmentId;
+    const role = (req.user?.role || "").toLowerCase();
 
-    // 1. Tổng số máy lưu trong hệ thống
-    const totalMachinesRes = await pool.query(`SELECT COUNT(*) FROM machine`);
-    const totalMachines = parseInt(totalMachinesRes.rows[0].count);
+    // 1. Lấy ngày hôm nay theo giờ địa phương (YYYY-MM-DD)
+    const today = new Date().toLocaleDateString("sv-SE"); // Chuỗi dạng "2026-08-26"
 
-    // 2. Số máy ĐANG hoạt động (active = true)
-    const activeMachinesRes = await pool.query(
-      `SELECT COUNT(*) FROM machine WHERE active = true`
-    );
-    const activeMachines = parseInt(activeMachinesRes.rows[0].count);
+    // 2. Xác định Ca làm việc khớp với DB ("Ca ngày" hoặc "Ca đêm")
+    const currentHour = new Date().getHours();
+    // Ví dụ: Từ 06:00 đến 18:00 là "Ca ngày", còn lại là "Ca đêm"
+    const currentShift =
+      currentHour >= 6 && currentHour < 18 ? "Ca ngày" : "Ca đêm";
 
-    // 3. 🌟 Số máy KHÔNG hoạt động (active = false)
-    const stoppedMachinesRes = await pool.query(
-      `SELECT COUNT(*) FROM machine WHERE active = false`
-    );
-    const stoppedMachines = parseInt(stoppedMachinesRes.rows[0].count);
+    // 3. Xử lý bộ lọc theo Bộ phận
+    let deptFilter = "";
+    const params = [today, currentShift];
 
-    // 4. Số máy đã thực hiện check hôm nay (Chỉ tính trên những máy đang active)
-    const todayInspectionsRes = await pool.query(
-      `
-        SELECT DISTINCT machine_id 
-        FROM inspection_header 
-        WHERE DATE(inspection_date) = $1
-      `,
-      [today]
-    );
-    const checkedMachines = todayInspectionsRes.rows.length;
+    if (role !== "manager" && role !== "admin" && userDepartmentId) {
+      deptFilter = " AND m.department_id = $3";
+      params.push(userDepartmentId);
+    }
 
-    // Máy chưa check = Tổng máy đang chạy - Máy đã check
-    const pendingMachines = activeMachines - checkedMachines;
+    // Query 1: Danh sách máy ĐÃ CHECK trong ca hôm nay
+    const checkedQuery = `
+      SELECT DISTINCT 
+        m.machine_id, 
+        m.machine_code, 
+        m.machine_name, 
+        h.inspection_date, 
+        h.inspector, 
+        h.approval_status
+      FROM machine m
+      JOIN inspection_header h ON m.machine_id = h.machine_id
+      WHERE h.inspection_date::date = $1::date
+        AND TRIM(h.shift) = TRIM($2)
+        ${deptFilter}
+      ORDER BY h.inspection_date DESC;
+    `;
 
-    // 5. Số máy phát sinh lỗi NG hôm nay (Giữ nguyên)
-    const totalNgRes = await pool.query(
-      `
-        SELECT COUNT(DISTINCT h.machine_id) 
-        FROM inspection_detail d
-        JOIN inspection_header h ON d.inspection_id = h.inspection_id
-        WHERE DATE(h.inspection_date) = $1 AND (d.result = 'NG' OR d.result = 'ng' OR d.result = 'X')
-      `,
-      [today]
-    );
-    const ngMachines = parseInt(totalNgRes.rows[0].count);
+    // Query 2: Danh sách máy CHƯA CHECK trong ca hôm nay
+    const uncheckedQuery = `
+      SELECT m.machine_id, m.machine_code, m.machine_name
+      FROM machine m
+      WHERE m.active = true
+        ${deptFilter}
+        AND m.machine_id NOT IN (
+          SELECT h.machine_id 
+          FROM inspection_header h 
+          WHERE h.inspection_date::date = $1::date 
+            AND TRIM(h.shift) = TRIM($2)
+        )
+      ORDER BY m.machine_code ASC;
+    `;
 
-    // 6. Danh sách chi tiết các máy lỗi NG (Giữ nguyên)
-    const alertListRes = await pool.query(
-      `
-        SELECT DISTINCT 
-          m.machine_code, m.machine_name, c.item_name, d.result, d.value, c.standard_value
-        FROM inspection_detail d
-        JOIN inspection_header h ON d.inspection_id = h.inspection_id
-        JOIN machine m ON h.machine_id = m.machine_id
-        JOIN checklist_item c ON d.item_id = c.item_id
-        WHERE DATE(h.inspection_date) = $1 AND (d.result = 'NG' OR d.result = 'ng' OR d.result = 'X')
-      `,
-      [today]
-    );
+    // Query 3: Tổng số máy
+    const summaryQuery = `
+      SELECT 
+        COUNT(m.machine_id) AS "totalMachines",
+        COUNT(CASE WHEN m.active = true THEN 1 END) AS "activeMachines",
+        COUNT(CASE WHEN m.active = false THEN 1 END) AS "stoppedMachines"
+      FROM machine m
+      WHERE 1=1 ${deptFilter};
+    `;
 
-    res.status(200).json({
+    const summaryParams =
+      role !== "manager" && role !== "admin" && userDepartmentId
+        ? [userDepartmentId]
+        : [];
+
+    const [checkedRes, uncheckedRes, summaryRes] = await Promise.all([
+      pool.query(checkedQuery, params),
+      pool.query(uncheckedQuery, params),
+      pool.query(summaryQuery, summaryParams),
+    ]);
+
+    res.json({
       success: true,
       summary: {
-        totalMachines,
-        activeMachines, // 🌟 Gửi thêm số máy đang chạy
-        stoppedMachines, // 🌟 Số máy đang dừng (active = false)
-        checkedMachines,
-        pendingMachines,
-        ngMachines,
+        totalMachines: parseInt(summaryRes.rows[0]?.totalMachines || 0),
+        activeMachines: parseInt(summaryRes.rows[0]?.activeMachines || 0),
+        stoppedMachines: parseInt(summaryRes.rows[0]?.stoppedMachines || 0),
+        checkedMachines: checkedRes.rows.length,
+        uncheckedMachines: uncheckedRes.rows.length,
+        currentShift,
       },
-      alerts: alertListRes.rows,
+      checkedList: checkedRes.rows,
+      uncheckedList: uncheckedRes.rows,
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, error: "Lỗi hệ thống Dashboard!" });
+  } catch (error) {
+    console.error("Lỗi getDashboardData:", error.message);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
