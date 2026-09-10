@@ -281,7 +281,7 @@ export default function TableReport({ t, reportData, daysArray, totalDays }) {
                         wordBreak: "break-word",
                       }}
                     >
-                      {item.item_name}
+                      {t(`category.${item.item_name}`)}
                     </TableCell>
                     <TableCell
                       rowSpan={2}
@@ -294,7 +294,7 @@ export default function TableReport({ t, reportData, daysArray, totalDays }) {
                         wordBreak: "break-word",
                       }}
                     >
-                      {item.standard_value}
+                      {t(`category_standard_value.${item.standard_value}`)}
                     </TableCell>
                     <TableCell
                       rowSpan={2}

@@ -62,7 +62,7 @@ const deviceSubItems = [
     roles: ["manager", "head"],
   },
   {
-    text: "Hạng mục kiểm tra",
+    text: "sidebar.category",
     path: "/category",
     icon: <CategoryIcon fontSize="small" />,
     roles: ["manager", "head"],
@@ -103,6 +103,7 @@ const menus = [
     hasSubMenu: true,
     subItems: deviceSubItems,
     key: "machine",
+    roles: ["manager", "head"],
   },
   { name: "sidebar.history", icon: <HistoryIcon />, path: "/history" },
   { name: "sidebar.report", icon: <DescriptionIcon />, path: "/report" },

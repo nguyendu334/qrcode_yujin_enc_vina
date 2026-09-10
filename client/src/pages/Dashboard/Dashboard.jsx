@@ -190,14 +190,14 @@ export default function Dashboard() {
             <Table>
               <TableHead sx={{ backgroundColor: "#f8fafc" }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: "600" }}>STT</TableCell>
-                  <TableCell sx={{ fontWeight: "600" }}>Mã Thiết Bị</TableCell>
-                  <TableCell sx={{ fontWeight: "600" }}>Tên Thiết Bị</TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>{t(`dashboard.stt`)}</TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>{t(`dashboard.code`)}</TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>{t(`dashboard.name`)}</TableCell>
                   <TableCell sx={{ fontWeight: "600" }}>
-                    Người Tích Kiểm Tra
+                    {t(`dashboard.inspector`)}
                   </TableCell>
                   <TableCell sx={{ fontWeight: "600" }}>
-                    Trạng Thái Duyệt
+                    {t(`dashboard.status`)}
                   </TableCell>
                 </TableRow>
               </TableHead>
