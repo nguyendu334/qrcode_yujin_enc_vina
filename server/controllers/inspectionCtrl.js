@@ -1,82 +1,5 @@
 const { pool } = require("../config/db");
 
-// Lấy theo người phê duyệt
-// const getInspectionHeader = async (req, res) => {
-//   try {
-//     const { fromDate, toDate, machineId, shift } = req.query;
-//     const loggedInApproverId =
-//       req.user?.id || req.user?.user_id || req.query.userId;
-//     const role = req.user?.role || req.query.role; // Lấy role người dùng
-
-//     if (!loggedInApproverId && !role) {
-//       return res
-//         .status(401)
-//         .json({ success: false, message: "Bạn cần đăng nhập để xem dữ liệu!" });
-//     }
-
-//     const isManager = role === "manager";
-
-//     let sql = `
-//         SELECT DISTINCT
-//           h.inspection_id AS "id",
-//           m.machine_code AS "machineCode",
-//           m.machine_name AS "machineName",
-//           h.inspector,
-//           h.shift,
-//           h.inspection_date AS "date",
-//           h.approval_status,
-//           h.approver_id,
-//           u.full_name AS "approver_name"
-//         FROM inspection_header h
-//         LEFT JOIN machine m ON h.machine_id = m.machine_id
-//         LEFT JOIN users u ON h.approver_id = u.user_id
-//         LEFT JOIN machine_type mt ON m.machine_type_id = mt.machine_type_id
-//         LEFT JOIN checklist_template ct ON mt.machine_type_id = ct.machine_type_id
-//         WHERE 1=1
-//       `;
-
-//     const params = [];
-//     let paramIndex = 1;
-
-//     // 🌟 Nếu KHÔNG PHẢI Manager/Admin thì mới lọc theo approver_id
-//     if (!isManager) {
-//       sql += ` AND ct.approver_id = $${paramIndex}`;
-//       params.push(loggedInApproverId);
-//       paramIndex++;
-//     }
-
-//     // Xử lý các bộ lọc tìm kiếm
-//     if (fromDate) {
-//       sql += ` AND h.inspection_date >= $${paramIndex}`;
-//       params.push(`${fromDate} 00:00:00`);
-//       paramIndex++;
-//     }
-//     if (toDate) {
-//       sql += ` AND h.inspection_date <= $${paramIndex}`;
-//       params.push(`${toDate} 23:59:59`);
-//       paramIndex++;
-//     }
-//     if (machineId) {
-//       sql += ` AND h.machine_id = $${paramIndex}`;
-//       params.push(machineId);
-//       paramIndex++;
-//     }
-//     if (shift) {
-//       sql += ` AND h.shift = $${paramIndex}`;
-//       params.push(shift);
-//       paramIndex++;
-//     }
-
-//     sql += ` ORDER BY h.inspection_date DESC`;
-
-//     const result = await pool.query(sql, params);
-//     res.json({ success: true, data: result.rows });
-//   } catch (error) {
-//     console.error("Lỗi getInspectionHeader:", error.message);
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
-
 const getInspectionHeader = async (req, res) => {
   try {
     const { fromDate, toDate, machineId, shift } = req.query;
@@ -279,8 +202,49 @@ const approveInspection = async (req, res) => {
   }
 };
 
+// duyệt hàng loạt
+const batchApprove = async (req, res) => {
+  try {
+    const { inspectionIds, comment } = req.body;
+
+    if (
+      !inspectionIds ||
+      !Array.isArray(inspectionIds) ||
+      inspectionIds.length === 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Danh sách ID không hợp lệ",
+      });
+    }
+
+    const updateQuery = `
+      UPDATE inspection_header
+      SET 
+        approval_status = 'approved',
+        approval_comment = $1::text
+      WHERE inspection_id = ANY($2::int[])
+        AND approval_status = 'pending';
+    `;
+
+    const result = await pool.query(updateQuery, [
+      comment || "Phê duyệt hàng loạt",
+      inspectionIds,
+    ]);
+
+    res.json({
+      success: true,
+      message: `Đã phê duyệt thành công ${result.rowCount} phiếu.`,
+    });
+  } catch (error) {
+    console.error("Lỗi batchApprove:", error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getInspectionHeader,
   getInspectionDetail,
   approveInspection,
+  batchApprove,
 };

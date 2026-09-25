@@ -1,7 +1,9 @@
 /* eslint-disable react/prop-types */
+import { useState } from "react";
 import {
   Box,
   Button,
+  Checkbox,
   Table,
   TableBody,
   TableCell,
@@ -11,14 +13,72 @@ import {
 
 export default function InspectionHeader({
   t,
-  headers,
+  headers = [],
   currentPage,
   setCurrentPage,
-  totalPages,
-  currentHeaders,
   handleSelectHeader,
   selectedInspectionId,
+  onBatchApprove,
 }) {
+  // State quản lý danh sách các ID được chọn để duyệt
+  const [selectedIds, setSelectedIds] = useState([]);
+
+  // 1. LỌC CHỈ LẤY NHỮNG DÒNG CHƯA DUYỆT (pending)
+  const pendingHeaders = headers.filter(
+    (item) => item.approval_status === "pending",
+  );
+
+  // Phân trang trên danh sách đã lọc pending
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(pendingHeaders.length / itemsPerPage) || 1;
+  const currentHeaders = pendingHeaders.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
+  // 2. XỬ LÝ CHECKBOX CHỌN TẤT CẢ (Dành cho trang hiện tại)
+  const handleSelectAll = (event) => {
+    if (event.target.checked) {
+      const currentPageIds = currentHeaders.map(
+        (row) => row.inspection_id || row.id,
+      );
+      // Gộp các ID mới vào mảng selectedIds mà không bị trùng
+      setSelectedIds((prev) => [...new Set([...prev, ...currentPageIds])]);
+    } else {
+      const currentPageIds = currentHeaders.map(
+        (row) => row.inspection_id || row.id,
+      );
+      setSelectedIds((prev) =>
+        prev.filter((id) => !currentPageIds.includes(id)),
+      );
+    }
+  };
+
+  // 3. XỬ LÝ CHECKBOX CHỌN TỪNG DÒNG
+  const handleSelectRow = (event, id) => {
+    event.stopPropagation(); // Tránh kích hoạt sự kiện onClick của TableRow
+    if (event.target.checked) {
+      setSelectedIds((prev) => [...prev, id]);
+    } else {
+      setSelectedIds((prev) => prev.filter((item) => item !== id));
+    }
+  };
+
+  // 4. XỬ LÝ GỬI YÊU CẦU DUYỆT
+  const handleApproveClick = () => {
+    if (selectedIds.length === 0) return;
+    if (onBatchApprove) {
+      onBatchApprove(selectedIds);
+      setSelectedIds([]); // Reset lại checkbox sau khi duyệt
+    }
+  };
+
+  const isAllCurrentSelected =
+    currentHeaders.length > 0 &&
+    currentHeaders.every((row) =>
+      selectedIds.includes(row.inspection_id || row.id),
+    );
+
   return (
     <Box
       sx={{
@@ -36,7 +96,7 @@ export default function InspectionHeader({
           alignItems: "center",
         }}
       >
-        <Box sx={{ display: "flex", gap: "12px" }}>
+        <Box sx={{ display: "flex", gap: "12px", alignItems: "center" }}>
           <input
             type="text"
             placeholder={t(`search`)}
@@ -58,9 +118,25 @@ export default function InspectionHeader({
           >
             📥 Download
           </Button>
+
+          {/* NÚT DUYỆT HÀNG LOẠT (Chỉ hiển thị khi có tích chọn) */}
+          {selectedIds.length > 0 && (
+            <Button
+              variant="contained"
+              color="success"
+              onClick={handleApproveClick}
+              sx={{
+                borderRadius: "6px",
+                fontWeight: "600",
+                textTransform: "none",
+              }}
+            >
+              {t(`history.approve`)} ({selectedIds.length})
+            </Button>
+          )}
         </Box>
 
-        {/* PHÂN TRANG GIAO DIỆN THEO ĐÚNG THIẾT KẾ */}
+        {/* PHÂN TRANG GIAO DIỆN */}
         <Box
           style={{
             fontSize: "13px",
@@ -70,7 +146,7 @@ export default function InspectionHeader({
             gap: "8px",
           }}
         >
-          <span>{headers.length} Records</span>
+          <span>{pendingHeaders.length} Chưa duyệt</span>
           <button
             type="button"
             disabled={currentPage === 1}
@@ -115,11 +191,18 @@ export default function InspectionHeader({
         <TableHead>
           <TableRow
             sx={{
-              backgroundColor: "",
               borderBottom: "1px solid #e2e8f0",
               textAlign: "left",
             }}
           >
+            {/* CỘT TÍCH CHỌN TẤT CẢ */}
+            <TableCell sx={{ padding: "8px", width: "50px" }}>
+              <Checkbox
+                size="small"
+                checked={isAllCurrentSelected}
+                onChange={handleSelectAll}
+              />
+            </TableCell>
             <TableCell sx={{ padding: "12px" }}>
               {t(`history.machinecode`)}
             </TableCell>
@@ -139,8 +222,8 @@ export default function InspectionHeader({
         </TableHead>
         <TableBody>
           {currentHeaders.map((row) => {
-            // Lấy trường ID linh hoạt theo dữ liệu trả về từ API Backend của bạn
             const currentId = row.inspection_id || row.id;
+            const isItemSelected = selectedIds.includes(currentId);
 
             return (
               <TableRow
@@ -152,11 +235,22 @@ export default function InspectionHeader({
                   backgroundColor:
                     selectedInspectionId === currentId
                       ? "#e0e7ff"
-                      : "transparent",
+                      : isItemSelected
+                        ? "#f0fdf4" // Màu nền nhẹ khi được checkbox chọn
+                        : "transparent",
                   fontWeight:
                     selectedInspectionId === currentId ? "500" : "normal",
                 }}
               >
+                {/* CỘT CHECKBOX CHO TỪNG DÒNG */}
+                <TableCell sx={{ padding: "8px" }}>
+                  <Checkbox
+                    size="small"
+                    checked={isItemSelected}
+                    onChange={(e) => handleSelectRow(e, currentId)}
+                    onClick={(e) => e.stopPropagation()} // Ngăn chặn sự kiện click chọn dòng
+                  />
+                </TableCell>
                 <TableCell sx={{ padding: "12px" }}>
                   {row.machineCode}
                 </TableCell>
@@ -169,56 +263,25 @@ export default function InspectionHeader({
                 </TableCell>
                 <TableCell sx={{ padding: "12px" }}>
                   {new Date(row.date || row.inspection_date).toLocaleString(
-                    "en-UK"
+                    "en-UK",
                   )}
                 </TableCell>
                 <TableCell sx={{ padding: "12px" }}>
-                  {(() => {
-                    // 1. Định nghĩa bộ màu sắc và text tương ứng với từng trạng thái
-                    const statusConfig = {
-                      pending: {
-                        text: "history.Đang chờ duyệt",
-                        color: "#b45309",
-                        bgColor: "#fef3c7",
-                      }, // Vàng Cam
-                      approved: {
-                        text: "history.Đã duyệt",
-                        color: "#15803d",
-                        bgColor: "#dcfce7",
-                      }, // Xanh lá
-                      rejected: {
-                        text: "history.Từ chối",
-                        color: "#b91c1c",
-                        bgColor: "#fee2e2",
-                      }, // Đỏ
-                    };
-
-                    // 2. Lấy cấu hình hiện tại dựa vào row.approval_status
-                    const currentStatus = statusConfig[row.approval_status] || {
-                      text: "Không có thông tin",
-                      color: "#64748b",
-                      bgColor: "#f1f5f9",
-                    };
-
-                    // 3. Trả về thẻ span đã được custom CSS đẹp mắt
-                    return (
-                      <span
-                        style={{
-                          display: "inline-block",
-                          padding: "4px 12px",
-                          borderRadius: "6px",
-                          fontSize: "0.85rem",
-                          fontWeight: "600",
-                          color: currentStatus.color,
-                          backgroundColor: currentStatus.bgColor,
-                          textAlign: "center",
-                          minWidth: "110px",
-                        }}
-                      >
-                        {t(currentStatus.text)}
-                      </span>
-                    );
-                  })()}
+                  <span
+                    style={{
+                      display: "inline-block",
+                      padding: "4px 12px",
+                      borderRadius: "6px",
+                      fontSize: "0.85rem",
+                      fontWeight: "600",
+                      color: "#b45309",
+                      backgroundColor: "#fef3c7",
+                      textAlign: "center",
+                      minWidth: "110px",
+                    }}
+                  >
+                    {t("history.Đang chờ duyệt")}
+                  </span>
                 </TableCell>
                 <TableCell sx={{ padding: "12px" }}>
                   {row.approver_name}

@@ -401,7 +401,13 @@
     "Trạng thái sạch sẽ PIN": "PIN cleanliness status",
     "Sensor/Cylinder": "Sensor/Cylinder",
     "Master Sample": "Master Sample",
-    "Kết quả ICT": "ICT Result"
+    "Kết quả ICT": "ICT Result",
+    "Vệ sinh": "Cleaning",
+    "Kiểm Tra Các Thiết Bị ( MCCB , ACB , RMU )": "Inspect Equipment (MCCB, ACB, RMU)",
+    "Kiểm Tra tiếp địa đã được đấu nối đến thiết bị đầy đủ chưa": "Check if grounding is fully connected to the equipment",
+    "Kiểm tra dòng điện làm việc của tủ": "Check panel operating current",
+    "Kiểm tra điện Áp Của Tủ": "Check panel voltage",
+    "Kiểm tra điện nhiệt độ làm việc của các thiết bị MCB": "Check operating temperature of MCB devices"
   },
   "category_standard_value": {
     "0.4-0.6": "0.4-0.6",
@@ -529,6 +535,11 @@
     "Trạng thái không bụi bẩn dị vật": "Free of dust, dirt, and foreign objects",
     "Phán định OK/NG chính xác": "Accurate OK/NG judgement",
     "Hiển thị/Lưu Data bình thường": "Normal display and data logging",
-    "Sạch sẽ không dị vật": "Clean, no foreign objects"
+    "Sạch sẽ không dị vật": "Clean, no foreign objects",
+    "Sạch sẽ": "Clean",
+    "Ngoại Quan bằng mắt": "Visual inspection",
+    "Đo Dòng điện làm việc phải < 80% dòng điện định mức của tủ": "Measured operating current must be < 80% of rated panel current",
+    "210V ~ 230V": "210V ~ 230V",
+    "< 60°C": "< 60°C"
   }
 }

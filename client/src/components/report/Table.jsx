@@ -21,34 +21,40 @@ export default function TableReport({ t, reportData, daysArray, totalDays }) {
       };
     }
 
-    const valStr = String(cellValue).trim();
+    // 1. Chuẩn hóa chuỗi: replace dấu phẩy thành dấu chấm
+    const normalizedVal = String(cellValue).trim().replace(",", ".");
     let cellBgColor = "transparent";
     let cellTextColor = "#334155";
 
-    if (valStr.toUpperCase() === "OK") {
+    if (normalizedVal.toUpperCase() === "OK") {
       cellBgColor = "#dcfce7";
       cellTextColor = "#15803d";
-    } else if (["NG", "X"].includes(valStr.toUpperCase())) {
+    } else if (["NG", "X"].includes(normalizedVal.toUpperCase())) {
       cellBgColor = "#fee2e2";
       cellTextColor = "#b91c1c";
     } else if (itemType === "NUMBER") {
-      const numVal = parseFloat(cellValue);
+      // 2. Ép kiểu số từ chuỗi đã chuẩn hóa
+      const numVal = parseFloat(normalizedVal);
       const minVal = minValue !== null ? parseFloat(minValue) : null;
       const maxVal = maxValue !== null ? parseFloat(maxValue) : null;
 
-      if (
-        (minVal !== null && numVal < minVal) ||
-        (maxVal !== null && numVal > maxVal)
-      ) {
-        cellBgColor = "#fee2e2";
-        cellTextColor = "#b91c1c";
-      } else {
-        cellBgColor = "#dcfce7";
-        cellTextColor = "#15803d";
+      // Kiểm tra nếu là số hợp lệ
+      if (!isNaN(numVal)) {
+        if (
+          (minVal !== null && numVal < minVal) ||
+          (maxVal !== null && numVal > maxVal)
+        ) {
+          cellBgColor = "#fee2e2";
+          cellTextColor = "#b91c1c";
+        } else {
+          cellBgColor = "#dcfce7";
+          cellTextColor = "#15803d";
+        }
       }
     }
 
-    return { cellBgColor, cellTextColor, displayVal: valStr };
+    // Trả về displayVal đã được đổi dấu phẩy sang dấu chấm (0,5 -> 0.5)
+    return { cellBgColor, cellTextColor, displayVal: normalizedVal };
   };
 
   // Hàm bóc tách dữ liệu theo Ca (Hỗ trợ nhiều kiểu cấu trúc Data)

@@ -15,8 +15,15 @@ export const updateApprove = async (currentInspectionId, data, headers) => {
   const res = await api.put(
     `/inspections/${currentInspectionId}/approval`,
     data,
-    headers
+    headers,
   );
   return res.data;
 };
 
+export const batchApprove = async (inspectionIds, comment) => {
+  const res = await api.post("/inspections/batch-approve", {
+    inspectionIds,
+    comment,
+  });
+  return res.data;
+};

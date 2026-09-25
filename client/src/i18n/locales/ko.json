@@ -402,7 +402,13 @@
     "Trạng thái sạch sẽ PIN": "핀 청정 상태",
     "Sensor/Cylinder": "센서/실린더",
     "Master Sample": "마스터 샘플",
-    "Kết quả ICT": "ICT 결과"
+    "Kết quả ICT": "ICT 결과",
+    "Vệ sinh": "청소",
+    "Kiểm Tra Các Thiết Bị ( MCCB , ACB , RMU )": "장비 점검 (MCCB, ACB, RMU)",
+    "Kiểm Tra tiếp địa đã được đấu nối đến thiết bị đầy đủ chưa": "장비 접지 연결 상태 점검",
+    "Kiểm tra dòng điện làm việc của tủ": "판넬 동작 전류 점검",
+    "Kiểm tra điện Áp Của Tủ": "판넬 전압 점검",
+    "Kiểm tra điện nhiệt độ làm việc của các thiết bị MCB": "MCB 소자 동작 온도 점검"
   },
   "category_standard_value": {
     "0.4-0.6": "0.4-0.6",
@@ -530,6 +536,11 @@
     "Trạng thái không bụi bẩn dị vật": "이물 및 분진 없는 상태",
     "Phán định OK/NG chính xác": "정확한 OK/NG 판정",
     "Hiển thị/Lưu Data bình thường": "디스플레이 및 데이터 저장 정상",
-    "Sạch sẽ không dị vật": "청결, 이물 없음"
+    "Sạch sẽ không dị vật": "청결, 이물 없음",
+    "Sạch sẽ": "청결",
+    "Ngoại Quan bằng mắt": "육안 검사",
+    "Đo Dòng điện làm việc phải < 80% dòng điện định mức của tủ": "측정 동작 전류는 판넬 정격 전류의 80% 미만이어야 함",
+    "210V ~ 230V": "210V ~ 230V",
+    "< 60°C": "< 60°C"
   }
 }

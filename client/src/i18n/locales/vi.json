@@ -402,7 +402,13 @@
     "Trạng thái sạch sẽ PIN": "Trạng thái sạch sẽ PIN",
     "Sensor/Cylinder": "Sensor/Cylinder",
     "Master Sample": "Master Sample",
-    "Kết quả ICT": "Kết quả ICT"
+    "Kết quả ICT": "Kết quả ICT",
+    "Vệ sinh": "Vệ sinh",
+    "Kiểm Tra Các Thiết Bị ( MCCB , ACB , RMU )": "Kiểm Tra Các Thiết Bị ( MCCB , ACB , RMU )",
+    "Kiểm Tra tiếp địa đã được đấu nối đến thiết bị đầy đủ chưa": "Kiểm Tra tiếp địa đã được đấu nối đến thiết bị đầy đủ chưa",
+    "Kiểm tra dòng điện làm việc của tủ": "Kiểm tra dòng điện làm việc của tủ",
+    "Kiểm tra điện Áp Của Tủ": "Kiểm tra điện Áp Của Tủ",
+    "Kiểm tra điện nhiệt độ làm việc của các thiết bị MCB": "Kiểm tra điện nhiệt độ làm việc của các thiết bị MCB"
   },
   "category_standard_value": {
     "0.4-0.6": "0.4-0.6",
@@ -530,6 +536,11 @@
     "Trạng thái không bụi bẩn dị vật": "Trạng thái không bụi bẩn dị vật",
     "Phán định OK/NG chính xác": "Phán định OK/NG chính xác",
     "Hiển thị/Lưu Data bình thường": "Hiển thị/Lưu Data bình thường",
-    "Sạch sẽ không dị vật": "Sạch sẽ không dị vật"
+    "Sạch sẽ không dị vật": "Sạch sẽ không dị vật",
+    "Sạch sẽ": "Sạch sẽ",
+    "Ngoại Quan bằng mắt": "Ngoại Quan bằng mắt",
+    "Đo Dòng điện làm việc phải < 80% dòng điện định mức của tủ": "Đo Dòng điện làm việc phải < 80% dòng điện định mức của tủ",
+    "210V ~ 230V": "210V ~ 230V",
+    "< 60°C": "< 60°C"
   }
 }

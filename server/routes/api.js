@@ -18,6 +18,7 @@ const {
   getInspectionHeader,
   getInspectionDetail,
   approveInspection,
+  batchApprove,
 } = require("../controllers/inspectionCtrl.js");
 const {
   getMachines,
@@ -84,7 +85,7 @@ router.get("/inspection-headers", verifyToken, getInspectionHeader);
 router.get(
   "/inspection-details/:inspectionId",
   verifyToken,
-  getInspectionDetail
+  getInspectionDetail,
 );
 
 // user api
@@ -92,28 +93,29 @@ router.get(
   "/users",
   verifyToken,
   checkRole(["manager", "admin", "head"]),
-  getUesrs
+  getUesrs,
 );
 router.post(
   "/users",
   verifyToken,
   checkRole(["manager", "admin", "head"]),
-  addUser
+  addUser,
 );
 router.put(
   "/users/:user_id",
   verifyToken,
   checkRole(["manager", "admin", "head"]),
-  updateUser
+  updateUser,
 );
 router.delete(
   "/users/:user_id",
   verifyToken,
   checkRole(["manager", "admin", "head"]),
-  deleteUser
+  deleteUser,
 );
 
 router.put("/inspections/:id/approval", verifyToken, approveInspection);
+router.post("/inspections/batch-approve", verifyToken, batchApprove);
 
 router.get("/reports/monthly", getMonthlyReport);
 

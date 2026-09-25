@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 
 import { getMachines } from "../../services/machineService";
 import {
+  batchApprove,
   getInspectionDetail,
   getInspectionHeader,
   updateApprove,
@@ -33,9 +34,8 @@ export default function InspectionHistory() {
     shift: "",
   });
 
-  // Quản lý phân trang bảng trên (Tối đa 5 dòng)
+  // Quản lý trang của bảng header
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
 
   // 1. FETCH DANH SÁCH MÁY
   useEffect(() => {
@@ -46,15 +46,14 @@ export default function InspectionHistory() {
       .catch((err) => console.error("Lỗi lấy danh mục máy:", err));
   }, []);
 
-  // 3. FETCH CHI TIẾT KHI CLICK DÒNG (Định nghĩa trước fetchHeaders)
+  // 3. FETCH CHI TIẾT KHI CLICK DÒNG
   const handleSelectHeader = useCallback(
     async (inspectionId, headersList = headers) => {
       if (!inspectionId) return;
       setSelectedInspectionId(inspectionId);
 
-      // Tìm thông tin header tương ứng để lấy approver_id
       const selectedHeader = headersList.find(
-        (h) => (h.inspection_id || h.id) === inspectionId
+        (h) => (h.inspection_id || h.id) === inspectionId,
       );
 
       if (selectedHeader) {
@@ -70,7 +69,7 @@ export default function InspectionHistory() {
         console.error("Lỗi khi fetch chi tiết:", error);
       }
     },
-    [headers]
+    [headers],
   );
 
   // 2. FETCH HEADERS DÙNG FILE HELPER
@@ -94,9 +93,13 @@ export default function InspectionHistory() {
         setHeaders(dataHeaders);
         setCurrentPage(1); // Reset về trang 1
 
-        // Tự động chọn dòng đầu tiên nếu có dữ liệu
-        if (dataHeaders.length > 0) {
-          const firstId = dataHeaders[0].inspection_id || dataHeaders[0].id;
+        // Chỉ tự động chọn dòng đầu tiên NẾU dòng đó đang pending
+        const pendingList = dataHeaders.filter(
+          (item) => item.approval_status === "pending",
+        );
+
+        if (pendingList.length > 0) {
+          const firstId = pendingList[0].inspection_id || pendingList[0].id;
           handleSelectHeader(firstId, dataHeaders);
         } else {
           setDetails([]);
@@ -123,13 +126,7 @@ export default function InspectionHistory() {
     setTimeout(() => fetchHeaders(), 50);
   };
 
-  // TÍNH TOÁN PHÂN TRANG (Mỗi trang 5 dòng)
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentHeaders = headers.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(headers.length / itemsPerPage) || 1;
-
-  // 4. HÀM XỬ LÝ GỌI API PHÊ DUYỆT / TỪ CHỐI
+  // 4. HÀM XỬ LÝ PHÊ DUYỆT TỪNG DÒNG (ĐÃ CÓ SẴN)
   const handleApproveAction = async (statusAction) => {
     if (!selectedInspectionId) {
       toast.warning("Vui lòng chọn phiếu kiểm tra!");
@@ -146,21 +143,50 @@ export default function InspectionHistory() {
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       toast.success(
         statusAction === "approved"
           ? "Phê duyệt thành công!"
-          : "Đã từ chối phiếu kiểm tra!"
+          : "Đã từ chối phiếu kiểm tra!",
       );
-      setApprovalComment(""); // Clear comment box
+      setApprovalComment("");
 
       // Refresh lại dữ liệu
       await fetchHeaders();
     } catch (error) {
       toast.error(
-        "Có lỗi xảy ra: " + (error.response?.data?.error || error.message)
+        "Có lỗi xảy ra: " + (error.response?.data?.error || error.message),
+      );
+    }
+  };
+
+  // 🌟 5. HÀM XỬ LÝ PHÊ DUYỆT HÀNG LOẠT (BATCH APPROVE)
+  const handleBatchApprove = async (inspectionIds) => {
+    if (!inspectionIds || inspectionIds.length === 0) return;
+
+    try {
+      // Lấy tên người duyệt từ tài khoản đang đăng nhập
+      const approverName = currentUser?.full_name;
+      const customComment = `Phê duyệt hàng loạt bởi ${approverName}`;
+
+      // Gọi service truyền mảng ID và comment
+      const response = await batchApprove(inspectionIds, customComment);
+
+      if (response.success) {
+        toast.success(
+          response.message ||
+            `Đã phê duyệt thành công ${inspectionIds.length} phiếu!`,
+        );
+        await fetchHeaders(); // Tải lại danh sách
+      } else {
+        toast.error(response.message || "Phê duyệt thất bại!");
+      }
+    } catch (error) {
+      console.error("Lỗi khi phê duyệt hàng loạt:", error);
+      toast.error(
+        "Có lỗi xảy ra: " + (error.response?.data?.message || error.message),
       );
     }
   };
@@ -188,16 +214,15 @@ export default function InspectionHistory() {
         handleReset={handleReset}
       />
 
-      {/* BẢNG 1: INSPECTION HEADER */}
+      {/* BẢNG 1: INSPECTION HEADER (ĐÃ CẬP NHẬT TRUYỀN PROP BATCH APPROVE) */}
       <InspectionHeader
         t={t}
         headers={headers}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
-        totalPages={totalPages}
-        currentHeaders={currentHeaders}
         handleSelectHeader={(id) => handleSelectHeader(id, headers)}
         selectedInspectionId={selectedInspectionId}
+        onBatchApprove={handleBatchApprove}
       />
 
       {/* BẢNG 2: INSPECTION DETAIL */}

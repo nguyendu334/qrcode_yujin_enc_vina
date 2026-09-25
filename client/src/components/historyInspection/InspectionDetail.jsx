@@ -148,10 +148,10 @@ export default function InspectionDetail({
                   sx={{ borderBottom: "1px solid #f1f5f9" }}
                 >
                   <TableCell sx={{ padding: "12px" }}>
-                    {item.item || "N/A"}
+                    {t(`category.${item.item}`) || "N/A"}
                   </TableCell>
                   <TableCell sx={{ padding: "12px", color: "#64748b" }}>
-                    {item.standard || "—"}
+                    {t(`category_standard_value.${item.standard}`) || "--"}
                   </TableCell>
                   <TableCell sx={{ padding: "12px" }}>
                     {item.result && item.result.trim() !== "" ? (
