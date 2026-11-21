@@ -142,7 +142,12 @@
     "code": "Equipment Code",
     "name": "Equipment Name",
     "inspector": "Inspector",
-    "status": "Approval Status"
+    "status": "Approval Status",
+    "manager": "Person in charge",
+    "department": "Department",
+    "area": "Area",
+    "detail": "Detail",
+    "close": "Close"
   },
   "report": {
     "title": "MONTHLY CHECKSHEET SUMMARY REPORT",

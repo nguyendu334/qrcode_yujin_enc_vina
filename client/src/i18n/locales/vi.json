@@ -143,7 +143,12 @@
     "code": "Mã Thiết Bị",
     "name": "Tên Thiết Bị",
     "inspector": "Người Kiểm Tra",
-    "status": "Trạng Thái Duyệt"
+    "status": "Trạng Thái Duyệt",
+    "manager": "Người Phụ Trách",
+    "department": "Bộ phận",
+    "area": "Khu Vực",
+    "detail": "Chi tiết kết quả kiểm tra",
+    "close": "Đóng"
   },
   "report": {
     "title": "BÁO CÁO TỔNG HỢP CHECKSHEET THEO THÁNG",

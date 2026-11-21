@@ -53,33 +53,62 @@ const getDashboardStats = async (req, res) => {
 
     // Query 1: Máy ĐÃ CHECK
     const checkedQuery = `
-      SELECT DISTINCT 
+      SELECT DISTINCT ON (m.machine_id)
+        h.inspection_id,
         m.machine_id, 
         m.machine_code, 
         m.machine_name, 
+        d.department_name,
+        COALESCE(a.area_name, m.line_no, '—') AS location,
+        m.line_no,
         h.inspection_date, 
-        h.inspector, 
-        h.approval_status
+        h.inspector,
+        COALESCE(u_approver.full_name, '—') AS person_in_charge,
+        h.approval_status,
+        -- 💡 Kiểm tra xem phiếu này có bất kỳ hạng mục nào bị NG không
+        EXISTS (
+          SELECT 1 
+          FROM inspection_detail d_check 
+          WHERE d_check.inspection_id = h.inspection_id 
+            AND d_check.result = 'NG'
+        ) AS has_ng
       FROM machine m
       JOIN inspection_header h ON m.machine_id = h.machine_id
+      LEFT JOIN department d ON m.department_id = d.department_id
+      LEFT JOIN area a ON m.area_id = a.area_id
+      LEFT JOIN checklist_template ct ON m.machine_type_id = ct.machine_type_id AND ct.active = true
+      LEFT JOIN users u_approver ON ct.approver_id = u_approver.user_id
       WHERE h.inspection_date::date = $1::date
         AND TRIM(h.shift) = TRIM($2)
         ${deptFilter}
-      ORDER BY h.inspection_date DESC;
+      ORDER BY m.machine_id, h.inspection_date DESC;
     `;
 
     // Query 2: Máy CHƯA CHECK
     const uncheckedQuery = `
-      SELECT m.machine_id, m.machine_code, m.machine_name
+      SELECT 
+        m.machine_id, 
+        m.machine_code, 
+        m.machine_name, 
+        d.department_name,                                   -- Tên bộ phận
+        COALESCE(a.area_name, m.line_no, '—') AS location,   -- Vị trí
+        m.line_no,
+        '—' AS inspector,                                    -- Chưa kiểm tra
+        COALESCE(u_approver.full_name, '—') AS person_in_charge -- Người phụ trách (lấy từ template)
       FROM machine m
+      LEFT JOIN department d ON m.department_id = d.department_id
+      LEFT JOIN area a ON m.area_id = a.area_id
+      -- JOIN lấy người phụ trách từ checklist_template theo machine_type_id
+      LEFT JOIN checklist_template ct ON m.machine_type_id = ct.machine_type_id AND ct.active = true
+      LEFT JOIN users u_approver ON ct.approver_id = u_approver.user_id
       WHERE m.active = true
-        ${deptFilter}
         AND m.machine_id NOT IN (
           SELECT h.machine_id 
           FROM inspection_header h 
-          WHERE h.inspection_date::date = $1::date 
+          WHERE h.inspection_date::date = $1::date
             AND TRIM(h.shift) = TRIM($2)
         )
+        ${deptFilter}
       ORDER BY m.machine_code ASC;
     `;
 

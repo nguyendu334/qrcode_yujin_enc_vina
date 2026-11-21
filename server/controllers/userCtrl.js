@@ -17,7 +17,7 @@ const getUesrs = async (req, res) => {
         d.department_name -- Lấy chính xác tên phòng ban từ bảng department
        FROM users u
        LEFT JOIN department d ON u.department_id = d.department_id
-       ORDER BY u.user_id DESC`
+       ORDER BY u.user_id DESC`,
     );
 
     // Trả dữ liệu về cho Frontend
@@ -40,7 +40,7 @@ const addUser = async (req, res) => {
     // Kiểm tra xem trùng username không
     const userExist = await pool.query(
       "SELECT user_id FROM users WHERE username = $1",
-      [username]
+      [username],
     );
     if (userExist.rows.length > 0) {
       return res
@@ -70,7 +70,7 @@ const addUser = async (req, res) => {
         active ?? true, // Mặc định trạng thái là đang hoạt động (true) nếu không truyền
         email,
         parsedDepartmentId, // Truyền đúng giá trị Số nguyên (hoặc null nếu trống) vào $7
-      ]
+      ],
     );
 
     res
@@ -82,14 +82,14 @@ const addUser = async (req, res) => {
   }
 };
 
-//API xoá máy
+//API xoá user
 const deleteUser = async (req, res) => {
   const { user_id } = req.params; // Nhận đúng tham số từ URL truyền vào
 
   try {
     const result = await pool.query(
       "DELETE FROM users WHERE user_id = $1 RETURNING user_id",
-      [user_id]
+      [user_id],
     );
 
     if (result.rows.length === 0) {
@@ -104,7 +104,7 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// API cập nhật thông tin máy
+// API cập nhật thông tin người dùng
 const updateUser = async (req, res) => {
   const userIdParsed = parseInt(req.params.user_id, 10);
 
@@ -112,26 +112,47 @@ const updateUser = async (req, res) => {
     return res.status(400).json({ message: "ID người dùng không hợp lệ!" });
   }
 
-  // 2. Lấy các dữ liệu cần sửa từ body gửi lên
-  const { username, full_name, role, active, email, department_id } = req.body;
+  // 1. Nhận thêm `password` từ body gửi lên
+  const { username, password, full_name, role, active, email, department_id } =
+    req.body;
 
   try {
-    // 3. Chạy câu lệnh UPDATE với đúng tên cột user_id trong Postgres
-    const result = await pool.query(
-      `UPDATE users 
-       SET username = $1, full_name = $2, role = $3, active = $4, email = $5, department_id = $6 
-       WHERE user_id = $7 
-       RETURNING user_id, username, full_name, role, active, email, department_id`,
-      [
-        username,
-        full_name,
-        role,
-        active,
-        email,
-        department_id ? parseInt(department_id, 10) : null,
-        userIdParsed,
-      ]
-    );
+    let result;
+    const deptId = department_id ? parseInt(department_id, 10) : null;
+
+    // 2. Kiểm tra người dùng có nhập mật khẩu mới hay không
+    if (password && password.trim() !== "") {
+      // Mã hóa mật khẩu mới bằng bcrypt
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+      // Cập nhật CẢ MẬT KHẨU MỚI
+      result = await pool.query(
+        `UPDATE users 
+         SET username = $1, password_hash = $2, full_name = $3, role = $4, active = $5, email = $6, department_id = $7 
+         WHERE user_id = $8 
+         RETURNING user_id, username, full_name, role, active, email, department_id`,
+        [
+          username,
+          hashedPassword, // Mật khẩu đã được mã hóa
+          full_name,
+          role,
+          active,
+          email,
+          deptId,
+          userIdParsed,
+        ],
+      );
+    } else {
+      // Nếu GIỮ NGUYÊN MẬT KHẨU (không cập nhật trường password)
+      result = await pool.query(
+        `UPDATE users 
+         SET username = $1, full_name = $2, role = $3, active = $4, email = $5, department_id = $6 
+         WHERE user_id = $7 
+         RETURNING user_id, username, full_name, role, active, email, department_id`,
+        [username, full_name, role, active, email, deptId, userIdParsed],
+      );
+    }
 
     if (result.rows.length === 0) {
       return res

@@ -14,13 +14,22 @@ import {
   Tab,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  IconButton,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 
 import { useTranslation } from "react-i18next";
 
 import { getDashboard } from "../../services/dashboardService";
+import { getInspectionDetail } from "../../services/inspectionService";
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -36,6 +45,12 @@ export default function Dashboard() {
   const [uncheckedList, setUncheckedList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0); // 0: Đã check, 1: Chưa check
+
+  // --- STATE DÀNH CHO DIALOG DETAIL ---
+  const [openDetailModal, setOpenDetailModal] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [selectedHeader, setSelectedHeader] = useState(null);
+  const [inspectionItems, setInspectionItems] = useState([]);
 
   const fetchDashboardData = async () => {
     try {
@@ -57,6 +72,37 @@ export default function Dashboard() {
     const interval = setInterval(fetchDashboardData, 300000); // 5 phút reload 1 lần
     return () => clearInterval(interval);
   }, []);
+
+  // Hàm gọi API lấy chi tiết khi nhấp vào Chip Status
+  const handleOpenDetail = async (inspectionId) => {
+    if (!inspectionId) return;
+    setOpenDetailModal(true);
+    setDetailLoading(true);
+    try {
+      const res = await getInspectionDetail(inspectionId);
+      if (res.success && res.data && res.data.length > 0) {
+        // Lấy thông tin trạng thái & người duyệt từ dòng dữ liệu đầu tiên
+        setSelectedHeader({
+          approver_name: res.data[0].approver_name,
+          approval_status: res.data[0].approval_status,
+        });
+        setInspectionItems(res.data);
+      } else {
+        setSelectedHeader(null);
+        setInspectionItems([]);
+      }
+    } catch (error) {
+      console.error("Lỗi lấy chi tiết phiếu kiểm tra:", error);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const handleCloseDetail = () => {
+    setOpenDetailModal(false);
+    setSelectedHeader(null);
+    setInspectionItems([]);
+  };
 
   if (loading) {
     return (
@@ -190,11 +236,26 @@ export default function Dashboard() {
             <Table>
               <TableHead sx={{ backgroundColor: "#f8fafc" }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: "600" }}>{t(`dashboard.stt`)}</TableCell>
-                  <TableCell sx={{ fontWeight: "600" }}>{t(`dashboard.code`)}</TableCell>
-                  <TableCell sx={{ fontWeight: "600" }}>{t(`dashboard.name`)}</TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>
+                    {t(`dashboard.stt`)}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>
+                    {t(`dashboard.department`)}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>
+                    {t(`dashboard.area`)}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>
+                    {t(`dashboard.code`)}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>
+                    {t(`dashboard.name`)}
+                  </TableCell>
                   <TableCell sx={{ fontWeight: "600" }}>
                     {t(`dashboard.inspector`)}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>
+                    {t(`dashboard.manager`)}
                   </TableCell>
                   <TableCell sx={{ fontWeight: "600" }}>
                     {t(`dashboard.status`)}
@@ -202,31 +263,97 @@ export default function Dashboard() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {checkedList.map((item, index) => (
-                  <TableRow key={item.machine_id} hover>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell sx={{ fontWeight: "600" }}>
-                      {item.machine_code}
-                    </TableCell>
-                    <TableCell>{item.machine_name}</TableCell>
-                    <TableCell>{item.inspector || "—"}</TableCell>
-                    <TableCell>
-                      <Chip
-                        icon={
-                          <CheckCircleOutlineOutlinedIcon fontSize="small" />
-                        }
-                        label={item.approval_status || "Đã kiểm tra"}
-                        color="success"
-                        size="small"
-                        variant="outlined"
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {checkedList.map((item, index) => {
+                  const statusVal =
+                    item.approval_status || item.status || "pending";
+                  const isApproved = statusVal === "approved";
+                  const hasNG = item.has_ng === true;
+
+                  return (
+                    <TableRow
+                      key={item.machine_id || index}
+                      hover
+                      sx={{
+                        // 💡 Nếu có lỗi NG thì tô nền màu đỏ nhạt, chữ màu đỏ nhạt để cảnh báo
+                        backgroundColor: hasNG ? "#fee2e2" : "inherit",
+                        "&:hover": {
+                          backgroundColor: hasNG
+                            ? "#fee2e2 !important"
+                            : undefined,
+                        },
+                      }}
+                    >
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>
+                        {item.department_name || item.department || "—"}
+                      </TableCell>
+                      <TableCell>
+                        {item.location || item.line_name || "—"}
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "600" }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                          }}
+                        >
+                          {hasNG && (
+                            <ErrorOutlineOutlinedIcon
+                              fontSize="small"
+                              sx={{
+                                color: "#ef4444",
+                                animation: "blink 1.5s infinite",
+                              }}
+                            />
+                          )}
+                          <span
+                            style={{ color: hasNG ? "#b91c1c" : "inherit" }}
+                          >
+                            {item.machine_code}
+                          </span>
+                        </Box>
+                      </TableCell>
+                      <TableCell>{item.machine_name}</TableCell>
+                      <TableCell>
+                        {item.inspector || item.created_by || "—"}
+                      </TableCell>
+                      <TableCell>
+                        {item.manager || item.person_in_charge || "—"}
+                      </TableCell>
+                      <TableCell>
+                        {/* Chip clickable mở Dialog chi tiết */}
+                        <Chip
+                          icon={
+                            isApproved ? (
+                              <CheckCircleOutlineOutlinedIcon fontSize="small" />
+                            ) : (
+                              <HourglassEmptyIcon fontSize="small" />
+                            )
+                          }
+                          label={statusVal}
+                          color={isApproved ? "success" : "warning"}
+                          size="small"
+                          variant="outlined"
+                          onClick={() => handleOpenDetail(item.inspection_id)}
+                          sx={{
+                            cursor: "pointer",
+                            fontWeight: "600",
+                            "&:hover": {
+                              backgroundColor: isApproved
+                                ? "#f0fdf4"
+                                : "#fff7ed",
+                            },
+                          }}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
                 {checkedList.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={8}
                       align="center"
                       sx={{ py: 3, color: "#94a3b8" }}
                     >
@@ -245,30 +372,60 @@ export default function Dashboard() {
             <Table>
               <TableHead sx={{ backgroundColor: "#f8fafc" }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: "600" }}>STT</TableCell>
-                  <TableCell sx={{ fontWeight: "600" }}>Mã Thiết Bị</TableCell>
-                  <TableCell sx={{ fontWeight: "600" }}>Tên Thiết Bị</TableCell>
-                  <TableCell sx={{ fontWeight: "600" }}>Trạng Thái</TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>
+                    {t(`dashboard.stt`)}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>
+                    {t(`dashboard.department`)}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>
+                    {t(`dashboard.area`)}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>
+                    {t(`dashboard.code`)}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>
+                    {t(`dashboard.name`)}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>
+                    {t(`dashboard.inspector`)}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>
+                    {t(`dashboard.manager`)}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "600" }}>
+                    {t(`dashboard.status`)}
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {uncheckedList.map((item, index) => (
                   <TableRow
-                    key={item.machine_id}
+                    key={item.machine_id || index}
                     hover
                     sx={{ backgroundColor: "#fef2f2" }}
                   >
                     <TableCell>{index + 1}</TableCell>
+                    <TableCell>
+                      {item.department_name || item.department || "—"}
+                    </TableCell>
+                    <TableCell>
+                      {item.location || item.line_name || "—"}
+                    </TableCell>
                     <TableCell sx={{ fontWeight: "600", color: "#b91c1c" }}>
                       {item.machine_code}
                     </TableCell>
                     <TableCell sx={{ color: "#7f1d1d" }}>
                       {item.machine_name}
                     </TableCell>
+                    <TableCell>—</TableCell>
+                    <TableCell>
+                      {item.manager || item.person_in_charge || "—"}
+                    </TableCell>
                     <TableCell>
                       <Chip
                         icon={<ErrorOutlineOutlinedIcon fontSize="small" />}
-                        label="Chờ kiểm tra"
+                        label={t(`dashboard.await`)}
                         color="error"
                         size="small"
                       />
@@ -278,7 +435,7 @@ export default function Dashboard() {
                 {uncheckedList.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={4}
+                      colSpan={8}
                       align="center"
                       sx={{ py: 3, color: "#10b981", fontWeight: "600" }}
                     >
@@ -292,6 +449,185 @@ export default function Dashboard() {
           </TableContainer>
         )}
       </Paper>
+
+      {/* ================= DIALOG CHI TIẾT NỘI DUNG ĐÃ CHECK ================= */}
+      <Dialog
+        open={openDetailModal}
+        onClose={handleCloseDetail}
+        maxWidth="lg"
+        fullWidth
+        sx={{ marginLeft: 30 }}
+      >
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: "700" }}>
+            {t(`dashboard.detail`)}:{" "}
+          </Typography>
+          <IconButton onClick={handleCloseDetail}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent dividers sx={{ p: 3 }}>
+          {detailLoading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 5 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+              {/* BANNER THÔNG TIN TRẠNG THÁI & NGƯỜI PHỤ TRÁCH/DUYỆT */}
+              <Box
+                sx={{
+                  p: 2,
+                  mb: 3,
+                  borderRadius: "8px",
+                  backgroundColor:
+                    selectedHeader?.approval_status === "approved"
+                      ? "#f0fdf4"
+                      : "#fffbe6",
+                  border:
+                    selectedHeader?.approval_status === "approved"
+                      ? "1px solid #bbf7d0"
+                      : "1px solid #ffe58f",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: "600",
+                    color:
+                      selectedHeader?.approval_status === "approved"
+                        ? "#15803d"
+                        : "#854d0e",
+                  }}
+                >
+                  {t(`dashboard.status`)}:
+                </Typography>
+                <Chip
+                  icon={
+                    selectedHeader?.approval_status === "approved" ? (
+                      <CheckCircleOutlineOutlinedIcon fontSize="small" />
+                    ) : (
+                      <HourglassEmptyIcon fontSize="small" />
+                    )
+                  }
+                  label={
+                    selectedHeader?.approval_status === "approved"
+                      ? `$ ${t("history.approver")}: ${selectedHeader?.approver_name || "Phụ trách"}`
+                      : `${t("history.waiting")}: ${selectedHeader?.approver_name || "Phụ trách"}`
+                  }
+                  color={
+                    selectedHeader?.approval_status === "approved"
+                      ? "success"
+                      : "warning"
+                  }
+                  size="small"
+                  sx={{ fontWeight: "600" }}
+                />
+              </Box>
+
+              {/* BẢNG DANH SÁCH HẠNG MỤC KIỂM TRA CHI TIẾT */}
+              <TableContainer
+                component={Paper}
+                variant="outlined"
+                sx={{ borderRadius: "8px" }}
+              >
+                <Table size="small">
+                  <TableHead sx={{ backgroundColor: "#f8fafc" }}>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: "700" }}>
+                        {t(`history.category`)}
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "700" }}>
+                        {t(`history.standard`)}
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "700" }} align="center">
+                        {t(`history.result`)}
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "700" }} align="center">
+                        {t(`history.value`)}
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "700" }}>
+                        {t(`history.remark`)}
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {inspectionItems.map((detail, idx) => (
+                      <TableRow key={detail.id || idx} hover>
+                        <TableCell sx={{ fontWeight: "500" }}>
+                          {t(`category.${detail.item}`) || "N/A"}
+                        </TableCell>
+                        <TableCell>
+                          {t(`category_standard_value.${detail.standard}`) ||
+                            "--"}
+                        </TableCell>
+                        <TableCell align="center">
+                          {/* Nếu có giá trị số (value) thì cột Kết quả để trống '—' */}
+                          {detail.value !== null &&
+                          detail.value !== undefined &&
+                          detail.value !== "" ? (
+                            "—"
+                          ) : detail.result === "OK" ? (
+                            <Chip
+                              label="OK"
+                              color="success"
+                              size="small"
+                              sx={{ fontWeight: "700", minWidth: 50 }}
+                            />
+                          ) : detail.result === "NG" ? (
+                            <Chip
+                              label="NG"
+                              color="error"
+                              size="small"
+                              sx={{ fontWeight: "700", minWidth: 50 }}
+                            />
+                          ) : (
+                            "—"
+                          )}
+                        </TableCell>
+                        <TableCell align="center">
+                          {detail.value ?? "—"}
+                        </TableCell>
+                        <TableCell>{detail.remark || "—"}</TableCell>
+                      </TableRow>
+                    ))}
+                    {inspectionItems.length === 0 && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={5}
+                          align="center"
+                          sx={{ py: 3, color: "#94a3b8" }}
+                        >
+                          Không tìm thấy chi tiết hạng mục kiểm tra.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </>
+          )}
+        </DialogContent>
+
+        <DialogActions sx={{ p: 2 }}>
+          <Button
+            onClick={handleCloseDetail}
+            variant="contained"
+            color="primary"
+          >
+            {t(`dashboard.close`)}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
