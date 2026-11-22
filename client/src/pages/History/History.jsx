@@ -53,7 +53,7 @@ export default function InspectionHistory() {
       setSelectedInspectionId(inspectionId);
 
       const selectedHeader = headersList.find(
-        (h) => (h.inspection_id || h.id) === inspectionId,
+        (h) => (h.inspection_id || h.id) === inspectionId
       );
 
       if (selectedHeader) {
@@ -69,7 +69,7 @@ export default function InspectionHistory() {
         console.error("Lỗi khi fetch chi tiết:", error);
       }
     },
-    [headers],
+    [headers]
   );
 
   // 2. FETCH HEADERS DÙNG FILE HELPER
@@ -95,7 +95,7 @@ export default function InspectionHistory() {
 
         // Chỉ tự động chọn dòng đầu tiên NẾU dòng đó đang pending
         const pendingList = dataHeaders.filter(
-          (item) => item.approval_status === "pending",
+          (item) => item.approval_status === "pending"
         );
 
         if (pendingList.length > 0) {
@@ -143,13 +143,13 @@ export default function InspectionHistory() {
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-        },
+        }
       );
 
       toast.success(
         statusAction === "approved"
           ? "Phê duyệt thành công!"
-          : "Đã từ chối phiếu kiểm tra!",
+          : "Đã từ chối phiếu kiểm tra!"
       );
       setApprovalComment("");
 
@@ -157,7 +157,7 @@ export default function InspectionHistory() {
       await fetchHeaders();
     } catch (error) {
       toast.error(
-        "Có lỗi xảy ra: " + (error.response?.data?.error || error.message),
+        "Có lỗi xảy ra: " + (error.response?.data?.error || error.message)
       );
     }
   };
@@ -177,7 +177,7 @@ export default function InspectionHistory() {
       if (response.success) {
         toast.success(
           response.message ||
-            `Đã phê duyệt thành công ${inspectionIds.length} phiếu!`,
+            `Đã phê duyệt thành công ${inspectionIds.length} phiếu!`
         );
         await fetchHeaders(); // Tải lại danh sách
       } else {
@@ -186,7 +186,7 @@ export default function InspectionHistory() {
     } catch (error) {
       console.error("Lỗi khi phê duyệt hàng loạt:", error);
       toast.error(
-        "Có lỗi xảy ra: " + (error.response?.data?.message || error.message),
+        "Có lỗi xảy ra: " + (error.response?.data?.message || error.message)
       );
     }
   };
@@ -199,9 +199,36 @@ export default function InspectionHistory() {
         gap: "24px",
       }}
     >
-      <Paper sx={{ p: 2, mb: 1, borderRadius: 4 }}>
-        <Typography variant="h5">{t(`history.title`)}</Typography>
-        <Typography color="text.secondary">{t(`history.content`)}</Typography>
+      <Paper
+        sx={{
+          p: { xs: 1.5, sm: 2.5 },
+          mb: 1,
+          borderRadius: { xs: 2, sm: 3 },
+          boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+        }}
+      >
+        <Typography
+          variant="h5"
+          sx={{
+            fontSize: { xs: "1.2rem", sm: "1.5rem" },
+            fontWeight: 700,
+            color: "text.primary",
+            lineHeight: 1.4,
+          }}
+        >
+          {t("history.title")}
+        </Typography>
+
+        <Typography
+          color="text.secondary"
+          sx={{
+            fontSize: { xs: "0.8rem", sm: "0.9rem" },
+            mt: 0.5,
+            lineHeight: 1.5,
+          }}
+        >
+          {t("history.content")}
+        </Typography>
       </Paper>
 
       {/* BỘ LỌC TÌM KIẾM */}

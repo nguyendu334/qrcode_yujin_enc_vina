@@ -7,8 +7,10 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
   TableRow,
+  Paper,
 } from "@mui/material";
 
 export default function InspectionHeader({
@@ -20,277 +22,329 @@ export default function InspectionHeader({
   selectedInspectionId,
   onBatchApprove,
 }) {
-  // State quản lý danh sách các ID được chọn để duyệt
   const [selectedIds, setSelectedIds] = useState([]);
 
-  // 1. LỌC CHỈ LẤY NHỮNG DÒNG CHƯA DUYỆT (pending)
+  // Chỉ lấy những dòng chưa duyệt
   const pendingHeaders = headers.filter(
-    (item) => item.approval_status === "pending",
+    (item) => item.approval_status === "pending"
   );
 
-  // Phân trang trên danh sách đã lọc pending
+  // Phân trang
   const itemsPerPage = 10;
   const totalPages = Math.ceil(pendingHeaders.length / itemsPerPage) || 1;
+
   const currentHeaders = pendingHeaders.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
-  // 2. XỬ LÝ CHECKBOX CHỌN TẤT CẢ (Dành cho trang hiện tại)
+  // Chọn tất cả trong trang hiện tại
   const handleSelectAll = (event) => {
+    const currentPageIds = currentHeaders.map(
+      (row) => row.inspection_id || row.id
+    );
+
     if (event.target.checked) {
-      const currentPageIds = currentHeaders.map(
-        (row) => row.inspection_id || row.id,
-      );
-      // Gộp các ID mới vào mảng selectedIds mà không bị trùng
       setSelectedIds((prev) => [...new Set([...prev, ...currentPageIds])]);
     } else {
-      const currentPageIds = currentHeaders.map(
-        (row) => row.inspection_id || row.id,
-      );
       setSelectedIds((prev) =>
-        prev.filter((id) => !currentPageIds.includes(id)),
+        prev.filter((id) => !currentPageIds.includes(id))
       );
     }
   };
 
-  // 3. XỬ LÝ CHECKBOX CHỌN TỪNG DÒNG
+  // Chọn từng dòng
   const handleSelectRow = (event, id) => {
-    event.stopPropagation(); // Tránh kích hoạt sự kiện onClick của TableRow
+    event.stopPropagation();
+
     if (event.target.checked) {
-      setSelectedIds((prev) => [...prev, id]);
+      setSelectedIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
     } else {
       setSelectedIds((prev) => prev.filter((item) => item !== id));
     }
   };
 
-  // 4. XỬ LÝ GỬI YÊU CẦU DUYỆT
+  // Duyệt hàng loạt
   const handleApproveClick = () => {
     if (selectedIds.length === 0) return;
+
     if (onBatchApprove) {
       onBatchApprove(selectedIds);
-      setSelectedIds([]); // Reset lại checkbox sau khi duyệt
+      setSelectedIds([]);
     }
   };
 
   const isAllCurrentSelected =
     currentHeaders.length > 0 &&
     currentHeaders.every((row) =>
-      selectedIds.includes(row.inspection_id || row.id),
+      selectedIds.includes(row.inspection_id || row.id)
     );
 
   return (
     <Box
       sx={{
-        backgroundColor: "#fff",
-        padding: "20px",
-        borderRadius: "12px",
+        width: "100%",
+        minWidth: 0,
+        boxSizing: "border-box",
+        backgroundColor: "background.paper",
+        p: { xs: 1.5, sm: 2, md: 2.5 },
+        borderRadius: 3,
         boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
       }}
     >
+      {/* Thanh công cụ */}
       <Box
         sx={{
           display: "flex",
+          flexDirection: { xs: "column", lg: "row" },
           justifyContent: "space-between",
-          marginBottom: "12px",
-          alignItems: "center",
+          alignItems: { xs: "stretch", lg: "center" },
+          gap: 2,
+          mb: 2,
         }}
       >
-        <Box sx={{ display: "flex", gap: "12px", alignItems: "center" }}>
-          <input
+        {/* Tìm kiếm và các nút chức năng */}
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: 1.5,
+            width: { xs: "100%", lg: "auto" },
+          }}
+        >
+          <Box
+            component="input"
             type="text"
-            placeholder={t(`search`)}
-            style={{
-              padding: "6px 12px",
-              borderRadius: "6px",
+            placeholder={t("search")}
+            sx={{
+              width: { xs: "100%", sm: "220px" },
+              minWidth: 0,
+              boxSizing: "border-box",
+              padding: "9px 12px",
+              borderRadius: 2,
               border: "1px solid #e2e8f0",
+              outline: "none",
+              fontSize: "14px",
             }}
           />
+
           <Button
+            variant="outlined"
             sx={{
-              background: "none",
-              border: "1px solid #e2e8f0",
-              padding: "6px 12px",
-              borderRadius: "6px",
-              cursor: "pointer",
+              borderColor: "#e2e8f0",
               color: "#64748b",
+              borderRadius: 2,
+              textTransform: "none",
+              whiteSpace: "nowrap",
+              px: 2,
             }}
           >
             📥 Download
           </Button>
 
-          {/* NÚT DUYỆT HÀNG LOẠT (Chỉ hiển thị khi có tích chọn) */}
           {selectedIds.length > 0 && (
             <Button
               variant="contained"
               color="success"
               onClick={handleApproveClick}
               sx={{
-                borderRadius: "6px",
-                fontWeight: "600",
+                borderRadius: 2,
+                fontWeight: 600,
                 textTransform: "none",
+                whiteSpace: "nowrap",
               }}
             >
-              {t(`history.approve`)} ({selectedIds.length})
+              {t("history.approve")} ({selectedIds.length})
             </Button>
           )}
         </Box>
 
-        {/* PHÂN TRANG GIAO DIỆN */}
+        {/* Phân trang */}
         <Box
-          style={{
-            fontSize: "13px",
-            color: "#64748b",
+          sx={{
             display: "flex",
+            flexWrap: "wrap",
             alignItems: "center",
-            gap: "8px",
+            justifyContent: { xs: "space-between", lg: "flex-end" },
+            gap: 1,
+            color: "#64748b",
+            fontSize: "13px",
           }}
         >
-          <span>{pendingHeaders.length} Chưa duyệt</span>
-          <button
-            type="button"
+          <Box sx={{ whiteSpace: "nowrap" }}>
+            {pendingHeaders.length} Chưa duyệt
+          </Box>
+
+          <Button
+            size="small"
+            variant="outlined"
             disabled={currentPage === 1}
-            onClick={() => setCurrentPage((prev) => prev - 1)}
-            style={{
-              border: "1px solid #e2e8f0",
-              background: "#fff",
-              padding: "4px 8px",
-              borderRadius: "4px",
-              cursor: currentPage === 1 ? "not-allowed" : "pointer",
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            sx={{
+              minWidth: 36,
+              px: 1,
+              borderColor: "#e2e8f0",
+              color: "#64748b",
             }}
           >
             &lt;
-          </button>
-          <span>
+          </Button>
+
+          <Box sx={{ whiteSpace: "nowrap" }}>
             Page <b>{currentPage}</b> of {totalPages}
-          </span>
-          <button
-            type="button"
+          </Box>
+
+          <Button
+            size="small"
+            variant="outlined"
             disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((prev) => prev + 1)}
-            style={{
-              border: "1px solid #e2e8f0",
-              background: "#fff",
-              padding: "4px 8px",
-              borderRadius: "4px",
-              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+            }
+            sx={{
+              minWidth: 36,
+              px: 1,
+              borderColor: "#e2e8f0",
+              color: "#64748b",
             }}
           >
             &gt;
-          </button>
+          </Button>
         </Box>
       </Box>
 
-      <Table
+      {/* Bảng dữ liệu */}
+      <TableContainer
+        component={Paper}
+        elevation={0}
         sx={{
           width: "100%",
-          borderCollapse: "collapse",
-          fontSize: "14px",
+          overflowX: "auto",
+          border: "1px solid #e2e8f0",
+          borderRadius: 2,
         }}
       >
-        <TableHead>
-          <TableRow
-            sx={{
-              borderBottom: "1px solid #e2e8f0",
-              textAlign: "left",
-            }}
-          >
-            {/* CỘT TÍCH CHỌN TẤT CẢ */}
-            <TableCell sx={{ padding: "8px", width: "50px" }}>
-              <Checkbox
-                size="small"
-                checked={isAllCurrentSelected}
-                onChange={handleSelectAll}
-              />
-            </TableCell>
-            <TableCell sx={{ padding: "12px" }}>
-              {t(`history.machinecode`)}
-            </TableCell>
-            <TableCell sx={{ padding: "12px" }}>
-              {t(`history.machinename`)}
-            </TableCell>
-            <TableCell sx={{ padding: "12px" }}>
-              {t(`history.inspector`)}
-            </TableCell>
-            <TableCell sx={{ padding: "12px" }}>{t(`history.shift`)}</TableCell>
-            <TableCell sx={{ padding: "12px" }}>{t(`history.date`)}</TableCell>
-            <TableCell sx={{ padding: "12px" }}>{t(`user.status`)}</TableCell>
-            <TableCell sx={{ padding: "12px" }}>
-              {t(`history.approver`)}
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {currentHeaders.map((row) => {
-            const currentId = row.inspection_id || row.id;
-            const isItemSelected = selectedIds.includes(currentId);
+        <Table
+          size="small"
+          sx={{
+            minWidth: 1000,
+            borderCollapse: "collapse",
+          }}
+        >
+          <TableHead>
+            <TableRow
+              sx={{
+                backgroundColor: "#f8fafc",
+                "& th": {
+                  fontWeight: 700,
+                  color: "#475569",
+                  whiteSpace: "nowrap",
+                  py: 1.5,
+                },
+              }}
+            >
+              <TableCell padding="checkbox">
+                <Checkbox
+                  size="small"
+                  checked={isAllCurrentSelected}
+                  onChange={handleSelectAll}
+                />
+              </TableCell>
 
-            return (
-              <TableRow
-                key={currentId}
-                onClick={() => handleSelectHeader(currentId)}
-                sx={{
-                  borderBottom: "1px solid #f1f5f9",
-                  cursor: "pointer",
-                  backgroundColor:
-                    selectedInspectionId === currentId
-                      ? "#e0e7ff"
-                      : isItemSelected
-                        ? "#f0fdf4" // Màu nền nhẹ khi được checkbox chọn
-                        : "transparent",
-                  fontWeight:
-                    selectedInspectionId === currentId ? "500" : "normal",
-                }}
-              >
-                {/* CỘT CHECKBOX CHO TỪNG DÒNG */}
-                <TableCell sx={{ padding: "8px" }}>
-                  <Checkbox
-                    size="small"
-                    checked={isItemSelected}
-                    onChange={(e) => handleSelectRow(e, currentId)}
-                    onClick={(e) => e.stopPropagation()} // Ngăn chặn sự kiện click chọn dòng
-                  />
-                </TableCell>
-                <TableCell sx={{ padding: "12px" }}>
-                  {row.machineCode}
-                </TableCell>
-                <TableCell sx={{ padding: "12px" }}>
-                  {row.machineName}
-                </TableCell>
-                <TableCell sx={{ padding: "12px" }}>{row.inspector}</TableCell>
-                <TableCell sx={{ padding: "12px" }}>
-                  {t(`shift.${row.shift}`)}
-                </TableCell>
-                <TableCell sx={{ padding: "12px" }}>
-                  {new Date(row.date || row.inspection_date).toLocaleString(
-                    "en-UK",
-                  )}
-                </TableCell>
-                <TableCell sx={{ padding: "12px" }}>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      padding: "4px 12px",
-                      borderRadius: "6px",
-                      fontSize: "0.85rem",
-                      fontWeight: "600",
-                      color: "#b45309",
-                      backgroundColor: "#fef3c7",
-                      textAlign: "center",
-                      minWidth: "110px",
+              <TableCell>{t("history.machinecode")}</TableCell>
+              <TableCell>{t("history.machinename")}</TableCell>
+              <TableCell>{t("history.inspector")}</TableCell>
+              <TableCell>{t("history.shift")}</TableCell>
+              <TableCell>{t("history.date")}</TableCell>
+              <TableCell>{t("user.status")}</TableCell>
+              <TableCell>{t("history.approver")}</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {currentHeaders.length > 0 ? (
+              currentHeaders.map((row) => {
+                const currentId = row.inspection_id || row.id;
+                const isItemSelected = selectedIds.includes(currentId);
+
+                return (
+                  <TableRow
+                    key={currentId}
+                    hover
+                    onClick={() => handleSelectHeader(currentId)}
+                    sx={{
+                      cursor: "pointer",
+                      backgroundColor:
+                        selectedInspectionId === currentId
+                          ? "#e0e7ff"
+                          : isItemSelected
+                          ? "#f0fdf4"
+                          : "transparent",
+                      "& td": {
+                        whiteSpace: "nowrap",
+                        py: 1.5,
+                      },
                     }}
                   >
-                    {t("history.Đang chờ duyệt")}
-                  </span>
-                </TableCell>
-                <TableCell sx={{ padding: "12px" }}>
-                  {row.approver_name}
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        size="small"
+                        checked={isItemSelected}
+                        onChange={(e) => handleSelectRow(e, currentId)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </TableCell>
+
+                    <TableCell>{row.machineCode}</TableCell>
+                    <TableCell>{row.machineName}</TableCell>
+                    <TableCell>{row.inspector}</TableCell>
+                    <TableCell>{t(`shift.${row.shift}`)}</TableCell>
+
+                    <TableCell>
+                      {new Date(row.date || row.inspection_date).toLocaleString(
+                        "en-UK"
+                      )}
+                    </TableCell>
+
+                    <TableCell>
+                      <Box
+                        component="span"
+                        sx={{
+                          display: "inline-block",
+                          px: 1.5,
+                          py: 0.5,
+                          borderRadius: 1.5,
+                          fontSize: "0.8rem",
+                          fontWeight: 600,
+                          color: "#b45309",
+                          backgroundColor: "#fef3c7",
+                          textAlign: "center",
+                          minWidth: 110,
+                        }}
+                      >
+                        {t("history.Đang chờ duyệt")}
+                      </Box>
+                    </TableCell>
+
+                    <TableCell>{row.approver_name}</TableCell>
+                  </TableRow>
+                );
+              })
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={8}
+                  align="center"
+                  sx={{ py: 4, color: "text.secondary" }}
+                >
+                  {t("history.noData") || "Không có dữ liệu"}
                 </TableCell>
               </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Box>
   );
 }

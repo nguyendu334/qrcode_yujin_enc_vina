@@ -20,6 +20,8 @@ import {
   DialogActions,
   Button,
   IconButton,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
@@ -33,6 +35,12 @@ import { getInspectionDetail } from "../../services/inspectionService";
 
 export default function Dashboard() {
   const { t } = useTranslation();
+
+  const theme = useTheme();
+
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  // const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
+
   const [stats, setStats] = useState({
     totalMachines: 0,
     activeMachines: 0,
@@ -120,40 +128,100 @@ export default function Dashboard() {
   }
 
   return (
-    <Box sx={{ p: 4, backgroundColor: "#f8fafc", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        width: "100%",
+        minWidth: 0,
+        boxSizing: "border-box",
+        // p: {
+        //   xs: 1.5,
+        //   sm: 2.5,
+        //   md: 3,
+        //   lg: 4,
+        // },
+        backgroundColor: "#f8fafc",
+        minHeight: "100vh",
+        overflowX: "hidden",
+      }}
+    >
       {/* HEADER */}
       <Box
         sx={{
           display: "flex",
+          flexDirection: {
+            xs: "column",
+            sm: "row",
+          },
           justifyContent: "space-between",
-          alignItems: "center",
-          mb: 3,
+          alignItems: {
+            xs: "stretch",
+            sm: "center",
+          },
+          gap: 2,
+          mb: {
+            xs: 2.5,
+            md: 3,
+          },
         }}
       >
-        <Box>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
           <Typography
             variant="h5"
-            sx={{ fontWeight: "700", color: "#1e293b", mb: 0.5 }}
+            sx={{
+              fontWeight: 700,
+              color: "#1e293b",
+              mb: 0.5,
+              fontSize: {
+                xs: "1.2rem",
+                sm: "1.4rem",
+                md: "1.5rem",
+              },
+              lineHeight: 1.3,
+              overflowWrap: "break-word",
+            }}
           >
-            {t(`dashboard.title`)}
+            {t("dashboard.title")}
           </Typography>
-          <Typography variant="body2" sx={{ color: "#64748b" }}>
-            {t(`dashboard.content`)} ({stats.currentShift})
+
+          <Typography
+            variant="body2"
+            sx={{
+              color: "#64748b",
+              fontSize: {
+                xs: "0.78rem",
+                sm: "0.875rem",
+              },
+              lineHeight: 1.5,
+            }}
+          >
+            {t("dashboard.content")} ({stats.currentShift})
           </Typography>
         </Box>
 
         <Paper
           elevation={0}
           sx={{
-            px: 2,
+            px: 1.5,
             py: 1,
             border: "1px solid #e2e8f0",
             borderRadius: "8px",
-            fontWeight: "600",
+            fontWeight: 600,
             color: "#475569",
+            fontSize: {
+              xs: "0.8rem",
+              sm: "0.875rem",
+            },
+            display: "flex",
+            alignItems: "center",
+            alignSelf: {
+              xs: "flex-start",
+              sm: "center",
+            },
+            whiteSpace: "nowrap",
+            flexShrink: 0,
           }}
         >
-          📅 {t(`dashboard.today`)}: {new Date().toLocaleDateString("vi-VN")}
+          📅 {t("dashboard.today")}: {new Date().toLocaleDateString("vi-VN")}
         </Paper>
       </Box>
 
@@ -161,32 +229,45 @@ export default function Dashboard() {
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: 2,
-          mb: 4,
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "repeat(2, minmax(0, 1fr))",
+            lg: "repeat(4, minmax(0, 1fr))",
+          },
+          gap: {
+            xs: 1.5,
+            sm: 2,
+          },
+          mb: {
+            xs: 2.5,
+            md: 4,
+          },
         }}
       >
         <CardKPI
           t={t}
-          title={t(`dashboard.online`)}
+          title={t("dashboard.online")}
           value={stats.activeMachines}
           color="#3b82f6"
         />
+
         <CardKPI
           t={t}
-          title={t(`dashboard.offline`)}
+          title={t("dashboard.offline")}
           value={stats.stoppedMachines}
           color="#94a3b8"
         />
+
         <CardKPI
           t={t}
-          title={t(`dashboard.checkedtoday`)}
+          title={t("dashboard.checkedtoday")}
           value={stats.checkedMachines}
           color="#10b981"
         />
+
         <CardKPI
           t={t}
-          title={t(`dashboard.await`)}
+          title={t("dashboard.await")}
           value={stats.uncheckedMachines}
           color="#ef4444"
           isWarning={stats.uncheckedMachines > 0}
@@ -200,6 +281,8 @@ export default function Dashboard() {
           border: "1px solid #e2e8f0",
           borderRadius: "8px",
           overflow: "hidden",
+          width: "100%",
+          minWidth: 0,
         }}
       >
         <Box
@@ -214,6 +297,23 @@ export default function Dashboard() {
           <Tabs
             value={activeTab}
             onChange={(e, newValue) => setActiveTab(newValue)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            sx={{
+              minHeight: 48,
+              "& .MuiTab-root": {
+                minWidth: "auto",
+                px: {
+                  xs: 1.5,
+                  sm: 2,
+                },
+                fontSize: {
+                  xs: "0.75rem",
+                  sm: "0.875rem",
+                },
+              },
+            }}
           >
             <Tab
               label={`${t(`dashboard.checkedtoday`)} (${checkedList.length})`}
@@ -232,8 +332,36 @@ export default function Dashboard() {
 
         {/* TAB 1: DANH SÁCH MÁY ĐÃ CHECK */}
         {activeTab === 0 && (
-          <TableContainer>
-            <Table>
+          <TableContainer
+            sx={{
+              width: "100%",
+              overflowX: "auto",
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
+            <Table
+              sx={{
+                minWidth: {
+                  xs: 850,
+                  md: 1000,
+                },
+                "& .MuiTableCell-root": {
+                  px: {
+                    xs: 1,
+                    sm: 2,
+                  },
+                  py: {
+                    xs: 1.2,
+                    sm: 1.5,
+                  },
+                  fontSize: {
+                    xs: "0.75rem",
+                    sm: "0.875rem",
+                  },
+                  whiteSpace: "nowrap",
+                },
+              }}
+            >
               <TableHead sx={{ backgroundColor: "#f8fafc" }}>
                 <TableRow>
                   <TableCell sx={{ fontWeight: "600" }}>
@@ -368,8 +496,36 @@ export default function Dashboard() {
 
         {/* TAB 2: DANH SÁCH MÁY CHƯA CHECK */}
         {activeTab === 1 && (
-          <TableContainer>
-            <Table>
+          <TableContainer
+            sx={{
+              width: "100%",
+              overflowX: "auto",
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
+            <Table
+              sx={{
+                minWidth: {
+                  xs: 850,
+                  md: 1000,
+                },
+                "& .MuiTableCell-root": {
+                  px: {
+                    xs: 1,
+                    sm: 2,
+                  },
+                  py: {
+                    xs: 1.2,
+                    sm: 1.5,
+                  },
+                  fontSize: {
+                    xs: "0.75rem",
+                    sm: "0.875rem",
+                  },
+                  whiteSpace: "nowrap",
+                },
+              }}
+            >
               <TableHead sx={{ backgroundColor: "#f8fafc" }}>
                 <TableRow>
                   <TableCell sx={{ fontWeight: "600" }}>
@@ -456,7 +612,27 @@ export default function Dashboard() {
         onClose={handleCloseDetail}
         maxWidth="lg"
         fullWidth
-        sx={{ marginLeft: 30 }}
+        fullScreen={isMobile}
+        sx={{
+          "& .MuiDialog-paper": {
+            margin: {
+              xs: 0,
+              sm: 2,
+            },
+            width: {
+              xs: "100%",
+              sm: "calc(100% - 32px)",
+            },
+            maxHeight: {
+              xs: "100%",
+              sm: "calc(100% - 64px)",
+            },
+            borderRadius: {
+              xs: 0,
+              sm: 2,
+            },
+          },
+        }}
       >
         <DialogTitle
           sx={{
@@ -473,7 +649,16 @@ export default function Dashboard() {
           </IconButton>
         </DialogTitle>
 
-        <DialogContent dividers sx={{ p: 3 }}>
+        <DialogContent
+          dividers
+          sx={{
+            p: {
+              xs: 1.5,
+              sm: 3,
+            },
+            overflowX: "auto",
+          }}
+        >
           {detailLoading ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 5 }}>
               <CircularProgress />
@@ -521,8 +706,12 @@ export default function Dashboard() {
                   }
                   label={
                     selectedHeader?.approval_status === "approved"
-                      ? `$ ${t("history.approver")}: ${selectedHeader?.approver_name || "Phụ trách"}`
-                      : `${t("history.waiting")}: ${selectedHeader?.approver_name || "Phụ trách"}`
+                      ? `$ ${t("history.approver")}: ${
+                          selectedHeader?.approver_name || "Phụ trách"
+                        }`
+                      : `${t("history.waiting")}: ${
+                          selectedHeader?.approver_name || "Phụ trách"
+                        }`
                   }
                   color={
                     selectedHeader?.approval_status === "approved"
@@ -538,9 +727,17 @@ export default function Dashboard() {
               <TableContainer
                 component={Paper}
                 variant="outlined"
-                sx={{ borderRadius: "8px" }}
+                sx={{
+                  borderRadius: "8px",
+                  overflowX: "auto",
+                }}
               >
-                <Table size="small">
+                <Table
+                  size="small"
+                  sx={{
+                    minWidth: 600,
+                  }}
+                >
                   <TableHead sx={{ backgroundColor: "#f8fafc" }}>
                     <TableRow>
                       <TableCell sx={{ fontWeight: "700" }}>
@@ -638,26 +835,69 @@ function CardKPI({ title, value, color, isWarning, t }) {
     <Paper
       elevation={0}
       sx={{
-        p: 2.5,
+        p: {
+          xs: 2,
+          sm: 2.5,
+        },
         borderRadius: "8px",
         border: "1px solid #e2e8f0",
         borderLeft: `5px solid ${color}`,
         backgroundColor: isWarning ? "#fef2f2" : "#ffffff",
+        minWidth: 0,
+        transition: "0.2s",
+        "&:hover": {
+          boxShadow: "0 3px 12px rgba(0,0,0,0.05)",
+          transform: {
+            xs: "none",
+            sm: "translateY(-2px)",
+          },
+        },
       }}
     >
       <Typography
         variant="caption"
-        sx={{ color: "#64748b", fontWeight: "600", textTransform: "uppercase" }}
+        sx={{
+          color: "#64748b",
+          fontWeight: 600,
+          textTransform: "uppercase",
+          fontSize: {
+            xs: "0.68rem",
+            sm: "0.75rem",
+          },
+          lineHeight: 1.5,
+          display: "block",
+        }}
       >
         {title}
       </Typography>
-      <Typography variant="h4" sx={{ fontWeight: "700", color: color, mt: 1 }}>
-        {value}{" "}
-        <span
-          style={{ fontSize: "14px", color: "#94a3b8", fontWeight: "normal" }}
+
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 700,
+          color,
+          mt: 1,
+          fontSize: {
+            xs: "1.75rem",
+            sm: "2rem",
+          },
+          display: "flex",
+          alignItems: "baseline",
+          gap: 1,
+        }}
+      >
+        {value}
+
+        <Box
+          component="span"
+          sx={{
+            fontSize: "13px",
+            color: "#94a3b8",
+            fontWeight: 400,
+          }}
         >
-          {t(`dashboard.machine`)}
-        </span>
+          {t("dashboard.machine")}
+        </Box>
       </Typography>
     </Paper>
   );

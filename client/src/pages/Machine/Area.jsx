@@ -38,7 +38,6 @@ import {
   updateArea,
 } from "../../services/machineService";
 
-// Dữ liệu mẫu danh sách bộ phận (dùng chọn department_id)
 const departmentsList = [
   { department_id: 1, department_name: "Production" },
   { department_id: 2, department_name: "VP" },
@@ -58,8 +57,8 @@ export default function Area() {
     area_name: "",
     department_id: "",
   });
-  const [errors, setErrors] = useState({});
 
+  const [errors, setErrors] = useState({});
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -80,7 +79,6 @@ export default function Area() {
     }
   };
 
-  // Tìm kiếm theo tên khu vực
   const filteredAreas = areas.filter((item) =>
     item.area_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -94,20 +92,27 @@ export default function Area() {
       });
     } else {
       setEditingItem(null);
-      setFormData({ area_name: "", department_id: "" });
+      setFormData({
+        area_name: "",
+        department_id: "",
+      });
     }
+
     setErrors({});
     setOpenDialog(true);
   };
 
   const validate = () => {
     const newErrors = {};
+
     if (!formData.area_name.trim()) {
       newErrors.area_name = "Tên khu vực không được để trống";
     }
+
     if (!formData.department_id) {
       newErrors.department_id = "Vui lòng chọn bộ phận";
     }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -122,16 +127,13 @@ export default function Area() {
       };
 
       if (editingItem) {
-        // 🌟 Gọi API cập nhật khu vực
         await updateArea(editingItem.area_id, payload);
         toast.success("Cập nhật khu vực thành công!");
       } else {
-        // 🌟 Gọi API thêm mới khu vực
         await addArea(payload);
         toast.success("Thêm khu vực mới thành công!");
       }
 
-      // Tải lại danh sách mới nhất từ Database và đóng Modal
       fetchAreas();
       setOpenDialog(false);
     } catch (error) {
@@ -147,8 +149,6 @@ export default function Area() {
       try {
         await deleteArea(id);
         toast.success("Xóa khu vực thành công!");
-
-        // Tải lại danh sách mới nhất từ Database
         fetchAreas();
       } catch (error) {
         console.error("Lỗi khi xóa khu vực:", error);
@@ -161,21 +161,45 @@ export default function Area() {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3 }}>
+    <Container
+      maxWidth="xl"
+      sx={{
+        py: { xs: 2, sm: 3 },
+        px: { xs: 1.5, sm: 2, md: 3 },
+      }}
+    >
       {/* Header */}
       <Box
         sx={{
           display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: { xs: "stretch", sm: "center" },
+          gap: 2,
           mb: 3,
         }}
       >
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: "#1e293b" }}>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              color: "#1e293b",
+              fontSize: { xs: "1.2rem", sm: "1.5rem" },
+              lineHeight: 1.4,
+            }}
+          >
             {t("areaPage.header")}
           </Typography>
-          <Typography variant="body2" sx={{ color: "#64748b", mt: 0.5 }}>
+
+          <Typography
+            variant="body2"
+            sx={{
+              color: "#64748b",
+              mt: 0.5,
+              fontSize: { xs: "0.8rem", sm: "0.875rem" },
+            }}
+          >
             {t("areaPage.des")}
           </Typography>
         </Box>
@@ -185,13 +209,17 @@ export default function Area() {
           startIcon={<AddIcon />}
           onClick={() => handleOpenDialog()}
           sx={{
-            borderRadius: "8px",
+            width: { xs: "100%", sm: "auto" },
+            borderRadius: 2,
             textTransform: "none",
             fontWeight: 600,
             px: 2.5,
             py: 1,
             backgroundColor: "#4f46e5",
-            "&:hover": { backgroundColor: "#4338ca" },
+            whiteSpace: "nowrap",
+            "&:hover": {
+              backgroundColor: "#4338ca",
+            },
           }}
         >
           {t("areaPage.addArea")}
@@ -201,8 +229,8 @@ export default function Area() {
       {/* Tìm kiếm */}
       <Card
         sx={{
-          p: 2,
-          mb: 3,
+          p: { xs: 1.5, sm: 2 },
+          mb: 2.5,
           borderRadius: 3,
           boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
         }}
@@ -212,7 +240,13 @@ export default function Area() {
           size="small"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ width: { xs: "100%", sm: 360 } }}
+          fullWidth
+          sx={{
+            maxWidth: { xs: "100%", sm: 360 },
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 2,
+            },
+          }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -223,29 +257,62 @@ export default function Area() {
         />
       </Card>
 
-      {/* Bảng Dữ Liệu */}
+      {/* Bảng dữ liệu */}
       <TableContainer
         component={Paper}
-        sx={{ borderRadius: 3, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}
+        sx={{
+          width: "100%",
+          overflowX: "auto",
+          borderRadius: 3,
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+        }}
       >
-        <Table>
+        <Table
+          sx={{
+            minWidth: 650,
+          }}
+        >
           <TableHead sx={{ backgroundColor: "#f8fafc" }}>
             <TableRow>
               <TableCell
                 align="center"
-                sx={{ fontWeight: 600, color: "#475569", width: "100px" }}
+                sx={{
+                  fontWeight: 700,
+                  color: "#475569",
+                  width: 80,
+                  whiteSpace: "nowrap",
+                }}
               >
                 {t("areaPage.stt")}
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: "#475569" }}>
+
+              <TableCell
+                sx={{
+                  fontWeight: 700,
+                  color: "#475569",
+                  minWidth: 160,
+                }}
+              >
                 {t("areaPage.name")}
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: "#475569" }}>
+
+              <TableCell
+                sx={{
+                  fontWeight: 700,
+                  color: "#475569",
+                  minWidth: 140,
+                }}
+              >
                 {t("areaPage.department")}
               </TableCell>
+
               <TableCell
                 align="center"
-                sx={{ fontWeight: 600, color: "#475569", width: "250px" }}
+                sx={{
+                  fontWeight: 700,
+                  color: "#475569",
+                  minWidth: 190,
+                }}
               >
                 {t("areaPage.action")}
               </TableCell>
@@ -267,55 +334,74 @@ export default function Area() {
                 <TableRow key={row.area_id || index} hover>
                   <TableCell
                     align="center"
-                    sx={{ fontWeight: 600, color: "#64748b" }}
+                    sx={{
+                      fontWeight: 600,
+                      color: "#64748b",
+                    }}
                   >
                     {index + 1}
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: "#1e293b" }}>
+
+                  <TableCell
+                    sx={{
+                      fontWeight: 600,
+                      color: "#1e293b",
+                    }}
+                  >
                     {row.area_name}
                   </TableCell>
+
                   <TableCell sx={{ color: "#64748b" }}>
                     {row.department_name}
                   </TableCell>
+
                   <TableCell align="center">
-                    <Button
-                      onClick={() => handleOpenDialog(row)}
-                      style={{
-                        marginRight: "12px",
-                        border: "1px solid #cbd5e1",
-                        background: "#fff",
-                        padding: "6px 12px",
-                        borderRadius: "4px",
-                        cursor: "pointer",
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        flexWrap: "wrap",
+                        gap: 1,
                       }}
-                      onMouseOver={(e) =>
-                        (e.currentTarget.style.backgroundColor = "#A8D4FF")
-                      }
-                      onMouseOut={(e) =>
-                        (e.currentTarget.style.backgroundColor = "#fff")
-                      }
                     >
-                      ✏️ {t("areaPage.edit")}
-                    </Button>
-                    <Button
-                      onClick={() => handleDelete(row.area_id)}
-                      style={{
-                        border: "1px solid #fee2e2",
-                        background: "#fff",
-                        color: "#dc2626",
-                        padding: "6px 12px",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
-                      onMouseOver={(e) =>
-                        (e.currentTarget.style.backgroundColor = "#F6BFB1")
-                      }
-                      onMouseOut={(e) =>
-                        (e.currentTarget.style.backgroundColor = "#fff")
-                      }
-                    >
-                      ❌ {t("areaPage.delete")}
-                    </Button>
+                      <Button
+                        size="small"
+                        onClick={() => handleOpenDialog(row)}
+                        sx={{
+                          border: "1px solid #cbd5e1",
+                          backgroundColor: "#fff",
+                          color: "#475569",
+                          px: 1.5,
+                          borderRadius: 1.5,
+                          textTransform: "none",
+                          whiteSpace: "nowrap",
+                          "&:hover": {
+                            backgroundColor: "#dbeafe",
+                          },
+                        }}
+                      >
+                        ✏️ {t("areaPage.edit")}
+                      </Button>
+
+                      <Button
+                        size="small"
+                        onClick={() => handleDelete(row.area_id)}
+                        sx={{
+                          border: "1px solid #fee2e2",
+                          backgroundColor: "#fff",
+                          color: "#dc2626",
+                          px: 1.5,
+                          borderRadius: 1.5,
+                          textTransform: "none",
+                          whiteSpace: "nowrap",
+                          "&:hover": {
+                            backgroundColor: "#fee2e2",
+                          },
+                        }}
+                      >
+                        ❌ {t("areaPage.delete")}
+                      </Button>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))
@@ -324,7 +410,10 @@ export default function Area() {
                 <TableCell
                   colSpan={4}
                   align="center"
-                  sx={{ py: 4, color: "#94a3b8" }}
+                  sx={{
+                    py: 4,
+                    color: "#94a3b8",
+                  }}
                 >
                   Không tìm thấy khu vực nào.
                 </TableCell>
@@ -334,27 +423,59 @@ export default function Area() {
         </Table>
       </TableContainer>
 
-      {/* Modal Thêm / Sửa */}
+      {/* Dialog thêm / sửa */}
       <Dialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
         maxWidth="sm"
         fullWidth
+        fullScreen={false}
+        PaperProps={{
+          sx: {
+            m: { xs: 1.5, sm: 2 },
+            width: {
+              xs: "calc(100% - 24px)",
+              sm: "100%",
+            },
+            borderRadius: { xs: 2, sm: 3 },
+          },
+        }}
       >
-        <DialogTitle sx={{ fontWeight: 700 }}>
+        <DialogTitle
+          sx={{
+            fontWeight: 700,
+            fontSize: { xs: "1.1rem", sm: "1.25rem" },
+            px: { xs: 2, sm: 3 },
+            py: 2,
+          }}
+        >
           {editingItem ? "Chỉnh sửa Khu Vực" : "Thêm Khu Vực Mới"}
         </DialogTitle>
 
-        <DialogContent dividers>
+        <DialogContent
+          dividers
+          sx={{
+            px: { xs: 2, sm: 3 },
+            py: 2,
+          }}
+        >
           <Box
             component="form"
-            sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: 1 }}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 2.5,
+              pt: 1,
+            }}
           >
             <TextField
               label="Tên khu vực"
               value={formData.area_name}
               onChange={(e) =>
-                setFormData({ ...formData, area_name: e.target.value })
+                setFormData({
+                  ...formData,
+                  area_name: e.target.value,
+                })
               }
               error={Boolean(errors.area_name)}
               helperText={errors.area_name}
@@ -369,11 +490,15 @@ export default function Area() {
               required
             >
               <InputLabel>Bộ phận</InputLabel>
+
               <Select
                 value={formData.department_id}
                 label="Bộ phận"
                 onChange={(e) =>
-                  setFormData({ ...formData, department_id: e.target.value })
+                  setFormData({
+                    ...formData,
+                    department_id: e.target.value,
+                  })
                 }
               >
                 {departmentsList.map((dept) => (
@@ -382,6 +507,7 @@ export default function Area() {
                   </MenuItem>
                 ))}
               </Select>
+
               {errors.department_id && (
                 <Typography
                   variant="caption"
@@ -395,22 +521,40 @@ export default function Area() {
           </Box>
         </DialogContent>
 
-        <DialogActions sx={{ px: 3, py: 2 }}>
+        <DialogActions
+          sx={{
+            px: { xs: 2, sm: 3 },
+            py: 2,
+            gap: 1,
+            flexDirection: { xs: "column-reverse", sm: "row" },
+            "& > button": {
+              width: { xs: "100%", sm: "auto" },
+              m: "0 !important",
+            },
+          }}
+        >
           <Button
             onClick={() => setOpenDialog(false)}
-            sx={{ color: "#64748b", textTransform: "none" }}
+            sx={{
+              color: "#64748b",
+              textTransform: "none",
+              px: 3,
+            }}
           >
             Hủy
           </Button>
+
           <Button
             variant="contained"
             onClick={handleSubmit}
             sx={{
               backgroundColor: "#4f46e5",
               textTransform: "none",
-              borderRadius: "8px",
+              borderRadius: 2,
               px: 3,
-              "&:hover": { backgroundColor: "#4338ca" },
+              "&:hover": {
+                backgroundColor: "#4338ca",
+              },
             }}
           >
             Lưu thông tin
