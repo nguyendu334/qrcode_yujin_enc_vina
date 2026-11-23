@@ -112,7 +112,7 @@ export default function ChecklistItemManager() {
   };
 
   return (
-    <Box sx={{ p: 4, backgroundColor: "#f8fafc", minHeight: "100vh" }}>
+    <Box sx={{ backgroundColor: "#f8fafc", minHeight: "100vh" }}>
       <HeaderSection onOpenAdd={handleOpenAdd} disabled={!selectedTemplateId} />
 
       <TemplateFilter

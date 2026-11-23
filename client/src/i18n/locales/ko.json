@@ -148,7 +148,10 @@
     "department": "부서",
     "area": "구역",
     "detail": "점검 상세 내역",
-    "close": "닫기"
+    "close": "닫기",
+    "search": "설비 코드, 이름, 부서로 검색...",
+    "Ca ngày": "주간",
+    "Ca đêm": "야간"
   },
   "report": {
     "title": "월간 체크시트 종합 보고서",
@@ -233,12 +236,26 @@
     "des": "공장 내 작업 구역 목록",
     "addArea": "구역 추가",
     "search": "구역 이름으로 검색",
-    "stt": "No.",
+    "stt": "순번",
     "name": "구역명",
     "department": "부서",
     "action": "작업",
     "edit": "수정",
     "delete": "삭제"
+  },
+  "categoryPage": {
+    "header": "점검 항목 관리",
+    "des": "설비 점검 항목 목록",
+    "addCategory": "항목 추가",
+    "select": "템플릿 선택",
+    "stt": "순번",
+    "name": "점검 항목",
+    "type": "유형",
+    "standard": "기준",
+    "unit": "단위",
+    "range": "허용 범위",
+    "action": "작업",
+    "displayOrder": "표시 순서"
   },
   "edit": "수정",
   "delete": "삭제",

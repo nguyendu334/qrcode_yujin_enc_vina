@@ -7,11 +7,15 @@ import {
   MenuItem,
 } from "@mui/material";
 
+import { useTranslation } from "react-i18next";
+
 export default function TemplateFilter({
   templates,
   selectedTemplateId,
   onChange,
 }) {
+  const { t } = useTranslation();
+
   return (
     <Paper
       elevation={0}
@@ -25,11 +29,11 @@ export default function TemplateFilter({
       }}
     >
       <FormControl size="small" sx={{ minWidth: 300 }}>
-        <InputLabel id="select-template-label">Chọn Mẫu Checksheet</InputLabel>
+        <InputLabel id="select-template-label">{t("categoryPage.select")}</InputLabel>
         <Select
           labelId="select-template-label"
           value={selectedTemplateId}
-          label="Chọn Mẫu Checksheet"
+          label={t("categoryPage.select")}
           onChange={(e) => onChange(e.target.value)}
           sx={{ borderRadius: "6px" }}
         >

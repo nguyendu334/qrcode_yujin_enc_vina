@@ -9,6 +9,7 @@ import {
   Button,
   CircularProgress,
 } from "@mui/material";
+
 import {
   FileDownload as ExcelIcon,
   PictureAsPdf as PdfIcon,
@@ -34,37 +35,50 @@ export default function ReportSearch({
     <Box
       sx={{
         display: "flex",
-        flexDirection: { xs: "column", md: "row" },
+        flexDirection: { xs: "column", lg: "row" },
+        flexWrap: { xs: "nowrap", lg: "wrap" },
         gap: 2,
-        alignItems: { xs: "stretch", md: "flex-end" },
+        alignItems: { xs: "stretch", lg: "flex-end" },
         mb: 3,
         backgroundColor: "#f8fafc",
-        padding: 2,
+        p: { xs: 1.5, sm: 2 },
         borderRadius: 2,
         border: "1px solid #e2e8f0",
+        width: "100%",
+        minWidth: 0,
+        boxSizing: "border-box",
       }}
     >
-      {/* Chọn thiết bị */}
+      {/* CHỌN THIẾT BỊ */}
       <FormControl
         size="small"
-        sx={{ minWidth: 200, flex: { xs: 1, md: "none" } }}
+        fullWidth
+        sx={{
+          minWidth: 0,
+          flex: { xs: "1 1 auto", lg: "0 1 220px" },
+        }}
       >
         <InputLabel
           id="select-machine-label"
           sx={{ fontWeight: "bold", color: "#475569" }}
         >
-          {t(`report.selectmachine`)}
+          {t("report.selectmachine")}
         </InputLabel>
+
         <Select
           labelId="select-machine-label"
           value={selectedMachine}
           onChange={(e) => setSelectedMachine(e.target.value)}
-          label={t(`report.selectmachine`)}
-          sx={{ backgroundColor: "#ffffff" }}
+          label={t("report.selectmachine")}
+          sx={{
+            backgroundColor: "#ffffff",
+            borderRadius: 1,
+          }}
         >
           <MenuItem value="">
-            <em>-- {t(`report.selectmachine`)} --</em>
+            <em>-- {t("report.selectmachine")} --</em>
           </MenuItem>
+
           {machines.map((m) => (
             <MenuItem key={m.machine_id} value={m.machine_id}>
               {m.machine_code} - {m.machine_name}
@@ -73,75 +87,111 @@ export default function ReportSearch({
         </Select>
       </FormControl>
 
-      {/* Chọn tháng */}
+      {/* CHỌN THÁNG */}
       <Box
         sx={{
           display: "flex",
           flexDirection: "column",
           gap: 0.5,
-          minWidth: 150,
+          width: { xs: "100%", lg: 170 },
+          minWidth: 0,
+          flexShrink: 0,
         }}
       >
         <Typography
           variant="caption"
-          sx={{ fontWeight: "bold", color: "#475569" }}
+          sx={{
+            fontWeight: "bold",
+            color: "#475569",
+          }}
         >
-          {t(`report.month`)}
+          {t("report.month")}
         </Typography>
-        <input
+
+        <Box
+          component="input"
           type="month"
           value={selectedMonth}
           onChange={(e) => setSelectedMonth(e.target.value)}
-          style={{
-            padding: "8.5px 14px",
-            borderRadius: "4px",
+          sx={{
+            width: "100%",
+            minWidth: 0,
+            height: 40,
+            px: 1.5,
+            boxSizing: "border-box",
+            borderRadius: 1,
             border: "1px solid #cbd5e1",
             fontFamily: "inherit",
             fontSize: "14px",
             backgroundColor: "#ffffff",
+            color: "#334155",
+            outline: "none",
+            "&:focus": {
+              borderColor: "#2563eb",
+              boxShadow: "0 0 0 1px #2563eb",
+            },
           }}
         />
       </Box>
 
-      {/* Nút Xem Báo Cáo */}
+      {/* NÚT XEM BÁO CÁO */}
       <Button
         variant="contained"
         color="primary"
         onClick={handleFetchReport}
         disabled={loading}
+        fullWidth
         startIcon={
           loading ? (
-            <CircularProgress size={20} color="inherit" />
+            <CircularProgress size={18} color="inherit" />
           ) : (
             <ViewIcon />
           )
         }
         sx={{
+          width: { xs: "100%", lg: "auto" },
+          minWidth: { lg: 150 },
+          height: 40,
+          px: 2.5,
           fontWeight: "bold",
           textTransform: "none",
-          height: "40px",
-          px: 3,
+          whiteSpace: "nowrap",
+          boxShadow: "none",
         }}
       >
         {loading ? "Đang tải..." : t("report.viewreport")}
       </Button>
 
-      {/* CÁC NÚT XUẤT FILE (Chỉ hiện khi có dữ liệu) */}
+      {/* CÁC NÚT XUẤT FILE */}
       {reportData.length > 0 && (
-        <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1,
+            width: { xs: "100%", lg: "auto" },
+            flexWrap: "wrap",
+          }}
+        >
           <Button
             variant="contained"
             onClick={exportToExcel}
             startIcon={<ExcelIcon />}
             sx={{
+              flex: { xs: 1, sm: "0 1 auto" },
+              minWidth: 0,
+              height: 40,
+              px: { xs: 1, sm: 2 },
               backgroundColor: "#16a34a",
-              "&:hover": { backgroundColor: "#15803d" },
+              "&:hover": {
+                backgroundColor: "#15803d",
+              },
               fontWeight: "bold",
               textTransform: "none",
-              height: "40px",
+              whiteSpace: "nowrap",
+              boxShadow: "none",
             }}
           >
-            {t(`report.exportexcel`)}
+            {t("report.exportexcel")}
           </Button>
 
           <Button
@@ -149,36 +199,60 @@ export default function ReportSearch({
             onClick={exportToPDF}
             startIcon={<PdfIcon />}
             sx={{
+              flex: { xs: 1, sm: "0 1 auto" },
+              minWidth: 0,
+              height: 40,
+              px: { xs: 1, sm: 2 },
               backgroundColor: "#dc2626",
-              "&:hover": { backgroundColor: "#b91c1c" },
+              "&:hover": {
+                backgroundColor: "#b91c1c",
+              },
               fontWeight: "bold",
               textTransform: "none",
-              height: "40px",
+              whiteSpace: "nowrap",
+              boxShadow: "none",
             }}
           >
-            {t(`report.exportpdf`)}
+            {t("report.exportpdf")}
           </Button>
         </Box>
       )}
 
-      {/* KHU VỰC NGƯỜI DUYỆT (Tự động đẩy về bên phải trên PC) */}
+      {/* NGƯỜI DUYỆT */}
       {approvers.length > 0 && (
         <Box
           sx={{
-            marginLeft: { md: "auto" },
+            ml: { lg: "auto" },
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             gap: 1,
-            padding: "8px 16px",
+            width: { xs: "100%", lg: "auto" },
+            maxWidth: "100%",
+            p: 1.5,
             backgroundColor: "#e2e8f0",
             borderRadius: 1,
+            boxSizing: "border-box",
             fontSize: "13px",
             color: "#334155",
+            overflowWrap: "anywhere",
           }}
         >
-          <ApproverIcon fontSize="small" />
-          <Box>
-            <strong>{t(`report.approver`)}:</strong> {approvers.join(", ")}
+          <ApproverIcon
+            fontSize="small"
+            sx={{
+              flexShrink: 0,
+              mt: "2px",
+            }}
+          />
+
+          <Box sx={{ minWidth: 0 }}>
+            <Typography
+              component="span"
+              sx={{ fontSize: "13px", fontWeight: "bold" }}
+            >
+              {t("report.approver")}:
+            </Typography>{" "}
+            {approvers.join(", ")}
           </Box>
         </Box>
       )}

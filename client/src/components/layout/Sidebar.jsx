@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 import {
   Drawer,
@@ -24,6 +25,7 @@ import {
   ExpandLess,
   ExpandMore,
 } from "@mui/icons-material";
+
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
 import EngineeringIcon from "@mui/icons-material/Engineering";
@@ -47,7 +49,7 @@ import { useAuth } from "../../context/AuthContext";
 const FULL_WIDTH = 280;
 const COLLAPSED_WIDTH = 80;
 
-// Submenu của Quản lý thiết bị
+// Submenu quản lý thiết bị
 const deviceSubItems = [
   {
     text: "sidebar.listMachine",
@@ -75,7 +77,7 @@ const deviceSubItems = [
   },
 ];
 
-// 🌟 Submenu của Quản lý người dùng
+// Submenu quản lý người dùng
 const userSubItems = [
   {
     text: "sidebar.userList",
@@ -95,7 +97,11 @@ const userSubItems = [
 ];
 
 const menus = [
-  { name: "sidebar.dashboard", icon: <DashboardIcon />, path: "/dashboard" },
+  {
+    name: "sidebar.dashboard",
+    icon: <DashboardIcon />,
+    path: "/dashboard",
+  },
   {
     name: "sidebar.machine",
     icon: <PrecisionManufacturingIcon />,
@@ -105,8 +111,16 @@ const menus = [
     key: "machine",
     roles: ["manager", "head"],
   },
-  { name: "sidebar.history", icon: <HistoryIcon />, path: "/history" },
-  { name: "sidebar.report", icon: <DescriptionIcon />, path: "/report" },
+  {
+    name: "sidebar.history",
+    icon: <HistoryIcon />,
+    path: "/history",
+  },
+  {
+    name: "sidebar.report",
+    icon: <DescriptionIcon />,
+    path: "/report",
+  },
   {
     name: "sidebar.maintenance",
     icon: <EngineeringIcon />,
@@ -117,40 +131,56 @@ const menus = [
     icon: <GroupIcon />,
     path: "/user",
     roles: ["manager"],
-    hasSubMenu: true, // 🌟 Bật Submenu cho User
+    hasSubMenu: true,
     subItems: userSubItems,
     key: "user",
   },
-  { name: "sidebar.setting", icon: <SettingsIcon />, path: "/setting" },
+  {
+    name: "sidebar.setting",
+    icon: <SettingsIcon />,
+    path: "/setting",
+  },
 ];
 
-// eslint-disable-next-line react/prop-types
-export default function Sidebar({ collapsed, setCollapsed }) {
+export default function Sidebar({
+  collapsed,
+  setCollapsed,
+  mobileOpen = false,
+  setMobileOpen = () => {},
+  isMobile: isMobileProp,
+}) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const theme = useTheme();
   const location = useLocation();
 
-  // State quản lý Đóng/Mở từng Submenu
+  const mediaIsMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobile = isMobileProp ?? mediaIsMobile;
+
   const [openSubMenus, setOpenSubMenus] = useState({
     machine: true,
     user: true,
   });
 
-  const toggleSubMenu = (key) => {
-    if (collapsed) {
-      setCollapsed(false);
-      setOpenSubMenus((prev) => ({ ...prev, [key]: true }));
-    } else {
-      setOpenSubMenus((prev) => ({ ...prev, [key]: !prev[key] }));
-    }
-  };
-
-  const isTabletOrMobile = useMediaQuery(theme.breakpoints.down("md"));
-
+  // Khi chuyển sang desktop thì đóng Drawer mobile
   useEffect(() => {
-    setCollapsed(isTabletOrMobile);
-  }, [isTabletOrMobile, setCollapsed]);
+    if (!isMobile) {
+      setMobileOpen(false);
+    }
+  }, [isMobile, setMobileOpen]);
+
+  // Tự mở submenu nếu đang ở trang con tương ứng
+  useEffect(() => {
+    setOpenSubMenus((prev) => ({
+      ...prev,
+      machine:
+        prev.machine ||
+        deviceSubItems.some((item) => item.path === location.pathname),
+      user:
+        prev.user ||
+        userSubItems.some((item) => item.path === location.pathname),
+    }));
+  }, [location.pathname]);
 
   const userRoles = Array.isArray(user?.roles)
     ? user.roles
@@ -158,31 +188,70 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   const hasAccess = (allowedRoles) => {
     if (!allowedRoles || allowedRoles.length === 0) return true;
+
     return allowedRoles.some((role) =>
-      userRoles.map((r) => r.toLowerCase()).includes(role.toLowerCase()),
+      userRoles
+        .map((r) => String(r).toLowerCase())
+        .includes(role.toLowerCase()),
     );
   };
 
   const currentWidth = collapsed ? COLLAPSED_WIDTH : FULL_WIDTH;
 
+  const handleCloseMobile = () => {
+    if (isMobile) {
+      setMobileOpen(false);
+    }
+  };
+
+  const toggleSubMenu = (key) => {
+    if (isMobile) {
+      setOpenSubMenus((prev) => ({
+        ...prev,
+        [key]: !prev[key],
+      }));
+      return;
+    }
+
+    if (collapsed) {
+      setCollapsed(false);
+      setOpenSubMenus((prev) => ({
+        ...prev,
+        [key]: true,
+      }));
+    } else {
+      setOpenSubMenus((prev) => ({
+        ...prev,
+        [key]: !prev[key],
+      }));
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.href = "/";
+  };
+
   return (
     <Drawer
-      variant="permanent"
+      variant={isMobile ? "temporary" : "permanent"}
+      open={isMobile ? mobileOpen : true}
+      onClose={handleCloseMobile}
+      ModalProps={{
+        keepMounted: true,
+      }}
       sx={{
-        width: currentWidth,
+        width: isMobile ? FULL_WIDTH : currentWidth,
         flexShrink: 0,
         whiteSpace: "nowrap",
         boxSizing: "border-box",
-        transition: theme.transitions.create("width", {
-          easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.enteringScreen,
-        }),
         "& .MuiDrawer-paper": {
-          width: currentWidth,
+          width: isMobile ? FULL_WIDTH : currentWidth,
           background: "#0f172a",
           color: "#fff",
           border: 0,
           overflowX: "hidden",
+          boxSizing: "border-box",
           transition: theme.transitions.create("width", {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen,
@@ -190,28 +259,34 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         },
       }}
     >
-      {/* Header Info & Toggle Button */}
+      {/* Header thông tin người dùng */}
       <Toolbar
         sx={{
           display: "flex",
           alignItems: "center",
-          justifyContent: collapsed ? "center" : "space-between",
+          justifyContent: !isMobile && collapsed ? "center" : "space-between",
           px: 1.5,
           py: 1,
+          minHeight: "64px",
         }}
       >
-        {!collapsed && (
+        {(!collapsed || isMobile) && (
           <Box sx={{ overflow: "hidden" }}>
             <Typography
-              sx={{ fontSize: "15px", fontWeight: "600", whiteSpace: "nowrap" }}
+              sx={{
+                fontSize: "15px",
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+              }}
             >
               {user?.full_name}
             </Typography>
+
             <Box sx={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <Typography
+              <Box
                 sx={{
-                  width: "8px",
-                  height: "8px",
+                  width: 8,
+                  height: 8,
                   borderRadius: "50%",
                   background:
                     user?.role === "manager"
@@ -221,33 +296,42 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                         : "#e0f2fe",
                 }}
               />
-              <Typography sx={{ fontSize: "12px", fontWeight: "700" }}>
+
+              <Typography sx={{ fontSize: "12px", fontWeight: 700 }}>
                 {user?.role?.toUpperCase()}
               </Typography>
             </Box>
           </Box>
         )}
 
-        <IconButton
-          onClick={() => setCollapsed(!collapsed)}
-          sx={{ color: "#94a3b8", "&:hover": { color: "#fff" } }}
-        >
-          {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-        </IconButton>
+        {!isMobile && (
+          <IconButton
+            onClick={() => setCollapsed(!collapsed)}
+            sx={{
+              color: "#94a3b8",
+              "&:hover": { color: "#fff" },
+            }}
+          >
+            {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+          </IconButton>
+        )}
       </Toolbar>
 
       <Divider sx={{ borderColor: "#374151" }} />
 
-      {/* Danh sách Menu */}
+      {/* Danh sách menu */}
       <List sx={{ px: 1, py: 1 }}>
         {menus
           .filter((menu) => hasAccess(menu.roles))
           .map((menu) => {
-            // Cấu trúc chung cho các Menu có Submenu (Machine, User...)
+            const isCollapsed = !isMobile && collapsed;
+
+            // Menu có submenu
             if (menu.hasSubMenu) {
               const isSubActive = menu.subItems.some(
                 (sub) => sub.path === location.pathname,
               );
+
               const isOpen = openSubMenus[menu.key];
 
               return (
@@ -257,26 +341,28 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                     sx={{
                       my: 0.5,
                       borderRadius: 2,
-                      justifyContent: collapsed ? "center" : "initial",
-                      px: collapsed ? 1.5 : 2,
+                      justifyContent: isCollapsed ? "center" : "initial",
+                      px: isCollapsed ? 1.5 : 2,
                       background: isSubActive
                         ? "rgba(79, 70, 229, 0.2)"
                         : "transparent",
-                      "&:hover": { background: "#312e81" },
+                      "&:hover": {
+                        background: "#312e81",
+                      },
                     }}
                   >
                     <ListItemIcon
                       sx={{
                         color: isSubActive ? "#818cf8" : "#fff",
                         minWidth: 0,
-                        mr: collapsed ? 0 : 2,
+                        mr: isCollapsed ? 0 : 2,
                         justifyContent: "center",
                       }}
                     >
                       {menu.icon}
                     </ListItemIcon>
 
-                    {!collapsed && (
+                    {!isCollapsed && (
                       <>
                         <ListItemText
                           primary={t(menu.name)}
@@ -286,6 +372,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                             color: isSubActive ? "#818cf8" : "#fff",
                           }}
                         />
+
                         {isOpen ? (
                           <ExpandLess sx={{ color: "#94a3b8" }} />
                         ) : (
@@ -296,18 +383,19 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                   </ListItemButton>
 
                   <Collapse
-                    in={isOpen && !collapsed}
+                    in={isOpen && !isCollapsed}
                     timeout="auto"
                     unmountOnExit
                   >
                     <List component="div" disablePadding>
                       {menu.subItems
-                        .filter((menu) => hasAccess(menu.roles))
+                        .filter((sub) => hasAccess(sub.roles))
                         .map((sub) => (
                           <ListItemButton
                             key={sub.path}
                             component={NavLink}
                             to={sub.path}
+                            onClick={handleCloseMobile}
                             sx={{
                               my: 0.3,
                               pl: 4,
@@ -325,11 +413,14 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                               sx={{
                                 color: "#94a3b8",
                                 minWidth: "28px",
-                                ".active &": { color: "#fff" },
+                                ".active &": {
+                                  color: "#fff",
+                                },
                               }}
                             >
                               {sub.icon}
                             </ListItemIcon>
+
                             <ListItemText
                               primary={t(sub.text)}
                               primaryTypographyProps={{
@@ -345,33 +436,37 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               );
             }
 
-            // Menu đơn lẻ không có Submenu
+            // Menu đơn
             const buttonContent = (
               <ListItemButton
                 component={NavLink}
                 to={menu.path}
-                key={menu.name}
+                onClick={handleCloseMobile}
                 sx={{
                   my: 0.5,
                   borderRadius: 2,
-                  justifyContent: collapsed ? "center" : "initial",
-                  px: collapsed ? 1.5 : 2,
-                  "&.active": { background: "#4f46e5" },
-                  "&:hover": { background: "#312e81" },
+                  justifyContent: isCollapsed ? "center" : "initial",
+                  px: isCollapsed ? 1.5 : 2,
+                  "&.active": {
+                    background: "#4f46e5",
+                  },
+                  "&:hover": {
+                    background: "#312e81",
+                  },
                 }}
               >
                 <ListItemIcon
                   sx={{
                     color: "#fff",
                     minWidth: 0,
-                    mr: collapsed ? 0 : 2,
+                    mr: isCollapsed ? 0 : 2,
                     justifyContent: "center",
                   }}
                 >
                   {menu.icon}
                 </ListItemIcon>
 
-                {!collapsed && (
+                {!isCollapsed && (
                   <ListItemText
                     primary={t(menu.name)}
                     primaryTypographyProps={{
@@ -383,25 +478,22 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               </ListItemButton>
             );
 
-            return collapsed ? (
+            return isCollapsed ? (
               <Tooltip title={t(menu.name)} placement="right" key={menu.name}>
                 {buttonContent}
               </Tooltip>
             ) : (
-              buttonContent
+              <Box key={menu.name}>{buttonContent}</Box>
             );
           })}
       </List>
 
       <Box sx={{ flexGrow: 1 }} />
 
-      {/* Nút Đăng xuất */}
+      {/* Nút đăng xuất */}
       <Box sx={{ p: 1.5, mt: "auto" }}>
         <Button
-          onClick={() => {
-            localStorage.clear();
-            window.location.href = "/";
-          }}
+          onClick={handleLogout}
           sx={{
             width: "100%",
             minWidth: 0,
@@ -414,7 +506,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             background: "rgba(239, 68, 68, 0.1)",
             border: "1px solid rgba(239, 68, 68, 0.2)",
             justifyContent: "center",
-            px: collapsed ? 0 : 2,
+            px: !isMobile && collapsed ? 0 : 2,
             transition: "all 0.2s ease-in-out",
             "&:hover": {
               background: "#ef4444",
@@ -427,11 +519,12 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           <Logout
             sx={{
               fontSize: "20px",
-              mr: collapsed ? 0 : 1.5,
+              mr: !isMobile && collapsed ? 0 : 1.5,
               flexShrink: 0,
             }}
           />
-          {!collapsed && (
+
+          {(!collapsed || isMobile) && (
             <Box component="span" sx={{ whiteSpace: "nowrap" }}>
               {t("logout")}
             </Box>

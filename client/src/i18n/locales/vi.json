@@ -148,7 +148,10 @@
     "department": "Bộ phận",
     "area": "Khu Vực",
     "detail": "Chi tiết kết quả kiểm tra",
-    "close": "Đóng"
+    "close": "Đóng",
+    "search": "Tìm kiếm mã máy, tên máy, bộ phận ...",
+    "Ca ngày": "Ca ngày",
+    "Ca đêm": "Ca đêm"
   },
   "report": {
     "title": "BÁO CÁO TỔNG HỢP CHECKSHEET THEO THÁNG",
@@ -239,6 +242,21 @@
     "action": "Thao tác",
     "edit": "Sửa",
     "delete": "Xoá"
+  },
+  "categoryPage": {
+    "header": "Quản lý hạng mục kiểm tra",
+    "des": "Danh sách hạng mục kiểm tra thiết bị trong nhà xưởng",
+    "addCategory": "Thêm hạng mục",
+    "select": "Chọn mẫu",
+    "stt": "STT",
+    "name": "Hạng mục kiểm tra",
+    "type": "Loại",
+    "standard": "Tiêu chuẩn",
+    "unit": "Đơn vị",
+    "range": "Khoảng cho phép",
+    "action": "Thao tác",
+    "edit": "Sửa hạng mục",
+    "displayOrder": "Thứ tự hiển thị"
   },
   "edit": "Sửa",
   "delete": "Xoá",

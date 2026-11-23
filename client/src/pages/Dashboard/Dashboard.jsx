@@ -22,11 +22,14 @@ import {
   IconButton,
   useMediaQuery,
   useTheme,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import SearchIcon from "@mui/icons-material/Search";
 
 import { useTranslation } from "react-i18next";
 
@@ -54,6 +57,9 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0); // 0: Đã check, 1: Chưa check
 
+  // --- STATE DÀNH CHO Ô TÌM KIẾM ---
+  const [searchTerm, setSearchTerm] = useState("");
+
   // --- STATE DÀNH CHO DIALOG DETAIL ---
   const [openDetailModal, setOpenDetailModal] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -80,6 +86,40 @@ export default function Dashboard() {
     const interval = setInterval(fetchDashboardData, 300000); // 5 phút reload 1 lần
     return () => clearInterval(interval);
   }, []);
+
+  // Lọc dữ liệu theo từ khóa tìm kiếm
+  const filterList = (list) => {
+    if (!searchTerm.trim()) return list;
+    const term = searchTerm.toLowerCase().trim();
+    return list.filter((item) => {
+      const dept = (
+        item.department_name ||
+        item.department ||
+        ""
+      ).toLowerCase();
+      const location = (item.location || item.line_name || "").toLowerCase();
+      const code = (item.machine_code || "").toLowerCase();
+      const name = (item.machine_name || "").toLowerCase();
+      const inspector = (item.inspector || item.created_by || "").toLowerCase();
+      const manager = (
+        item.manager ||
+        item.person_in_charge ||
+        ""
+      ).toLowerCase();
+
+      return (
+        dept.includes(term) ||
+        location.includes(term) ||
+        code.includes(term) ||
+        name.includes(term) ||
+        inspector.includes(term) ||
+        manager.includes(term)
+      );
+    });
+  };
+
+  const filteredCheckedList = filterList(checkedList);
+  const filteredUncheckedList = filterList(uncheckedList);
 
   // Hàm gọi API lấy chi tiết khi nhấp vào Chip Status
   const handleOpenDetail = async (inspectionId) => {
@@ -194,7 +234,7 @@ export default function Dashboard() {
               lineHeight: 1.5,
             }}
           >
-            {t("dashboard.content")} ({stats.currentShift})
+            {t("dashboard.content")} ({t(`dashboard.${stats.currentShift}`)})
           </Typography>
         </Box>
 
@@ -240,7 +280,7 @@ export default function Dashboard() {
           },
           mb: {
             xs: 2.5,
-            md: 4,
+            md: 3,
           },
         }}
       >
@@ -271,6 +311,40 @@ export default function Dashboard() {
           value={stats.uncheckedMachines}
           color="#ef4444"
           isWarning={stats.uncheckedMachines > 0}
+        />
+      </Box>
+
+      {/* Ô TÌM KIẾM DỮ LIỆU BẢNG */}
+      <Box sx={{ mb: 2, maxWidth: 350 }}>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder={t("dashboard.search")}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" sx={{ color: "#94a3b8" }} />
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "8px",
+              "& fieldset": {
+                borderColor: "#e2e8f0",
+              },
+              "&:hover fieldset": {
+                borderColor: "#cbd5e1",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "#3b82f6",
+              },
+            },
+          }}
         />
       </Box>
 
@@ -316,15 +390,15 @@ export default function Dashboard() {
             }}
           >
             <Tab
-              label={`${t(`dashboard.checkedtoday`)} (${checkedList.length})`}
+              label={`${t(`dashboard.checkedtoday`)} (${filteredCheckedList.length})`}
               sx={{ fontWeight: "600", textTransform: "none" }}
             />
             <Tab
-              label={`${t(`dashboard.await`)} (${uncheckedList.length})`}
+              label={`${t(`dashboard.await`)} (${filteredUncheckedList.length})`}
               sx={{
                 fontWeight: "600",
                 textTransform: "none",
-                color: uncheckedList.length > 0 ? "#ef4444" : "inherit",
+                color: filteredUncheckedList.length > 0 ? "#ef4444" : "inherit",
               }}
             />
           </Tabs>
@@ -391,7 +465,7 @@ export default function Dashboard() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {checkedList.map((item, index) => {
+                {filteredCheckedList.map((item, index) => {
                   const statusVal =
                     item.approval_status || item.status || "pending";
                   const isApproved = statusVal === "approved";
@@ -478,14 +552,16 @@ export default function Dashboard() {
                     </TableRow>
                   );
                 })}
-                {checkedList.length === 0 && (
+                {filteredCheckedList.length === 0 && (
                   <TableRow>
                     <TableCell
                       colSpan={8}
                       align="center"
                       sx={{ py: 3, color: "#94a3b8" }}
                     >
-                      Chưa có máy nào được kiểm tra trong ca này.
+                      {searchTerm
+                        ? "Không tìm thấy thiết bị khớp với từ khóa."
+                        : "Chưa có máy nào được kiểm tra trong ca này."}
                     </TableCell>
                   </TableRow>
                 )}
@@ -555,7 +631,7 @@ export default function Dashboard() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {uncheckedList.map((item, index) => (
+                {filteredUncheckedList.map((item, index) => (
                   <TableRow
                     key={item.machine_id || index}
                     hover
@@ -588,15 +664,16 @@ export default function Dashboard() {
                     </TableCell>
                   </TableRow>
                 ))}
-                {uncheckedList.length === 0 && (
+                {filteredUncheckedList.length === 0 && (
                   <TableRow>
                     <TableCell
                       colSpan={8}
                       align="center"
                       sx={{ py: 3, color: "#10b981", fontWeight: "600" }}
                     >
-                      🎉 Tuyệt vời! Tất cả thiết bị trong ca đã hoàn thành kiểm
-                      tra.
+                      {searchTerm
+                        ? "Không tìm thấy thiết bị khớp với từ khóa."
+                        : "🎉 Tuyệt vời! Tất cả thiết bị trong ca đã hoàn thành kiểm tra."}
                     </TableCell>
                   </TableRow>
                 )}

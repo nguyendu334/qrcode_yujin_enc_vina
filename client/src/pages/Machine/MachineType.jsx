@@ -214,8 +214,6 @@ export default function MachineType() {
     <Container
       maxWidth="xl"
       sx={{
-        py: { xs: 2, sm: 3 },
-        px: { xs: 1.5, sm: 3 },
         minWidth: 0,
       }}
     >

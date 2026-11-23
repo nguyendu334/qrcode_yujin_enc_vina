@@ -147,7 +147,10 @@
     "department": "Department",
     "area": "Area",
     "detail": "Detail",
-    "close": "Close"
+    "close": "Close",
+    "search": "Search machine code, name, department ...",
+    "Ca ngày": "Day",
+    "Ca đêm": "Night"
   },
   "report": {
     "title": "MONTHLY CHECKSHEET SUMMARY REPORT",
@@ -238,6 +241,20 @@
     "action": "Actions",
     "edit": "Edit",
     "delete": "Delete"
+  },
+  "categoryPage": {
+    "header": "Category Management",
+    "des": "List of inspection categories for equipment in the factory",
+    "addCategory": "Add Category",
+    "select": "Select Template",
+    "stt": "No.",
+    "name": "Category Name",
+    "type": "Type",
+    "standard": "Standard",
+    "unit": "Unit",
+    "range": "Allowed Range",
+    "action": "Actions",
+    "displayOrder": "Display Order"
   },
   "edit": "Edit",
   "delete": "Delete",

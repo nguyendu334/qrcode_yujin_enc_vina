@@ -1,4 +1,4 @@
-import { Box, Paper, Typography, TablePagination } from "@mui/material";
+import { Box, Typography, TablePagination } from "@mui/material";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 
@@ -157,9 +157,8 @@ export default function MachinePage() {
 
   return (
     <Box sx={{ width: "100%", boxSizing: "border-box" }}>
-      <Paper
+      <Box
         sx={{
-          p: 2,
           mb: 3,
           borderRadius: 4,
         }}
@@ -171,7 +170,7 @@ export default function MachinePage() {
         <Typography>
           {t("machineTable.manage")}
         </Typography>
-      </Paper>
+      </Box>
 
       <MachineToolbar
         handleAdd={handleAdd}

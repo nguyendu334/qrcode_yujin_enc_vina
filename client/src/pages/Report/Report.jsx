@@ -15,7 +15,7 @@ const Report = () => {
   const [machines, setMachines] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState("");
   const [selectedMonth, setSelectedMonth] = useState(
-    new Date().toISOString().slice(0, 7)
+    new Date().toISOString().slice(0, 7),
   );
   const [reportData, setReportData] = useState([]);
   const [approvers, setApprovers] = useState([]);
@@ -140,7 +140,7 @@ const Report = () => {
     }
 
     const currentMachineObj = machines.find(
-      (m) => m.machine_id.toString() === selectedMachine.toString()
+      (m) => m.machine_id.toString() === selectedMachine.toString(),
     );
     const machineNameDisplay = currentMachineObj
       ? `${currentMachineObj.machine_name} (${currentMachineObj.machine_code})`
@@ -284,7 +284,7 @@ const Report = () => {
 
     const fileName = `Bao_Cao_Checksheet_${selectedMonth.replace(
       "-",
-      "_"
+      "_",
     )}.xlsx`;
     XLSStyle.writeFile(workbook, fileName);
   };
@@ -337,7 +337,7 @@ const Report = () => {
     doc.text(
       `BAO CAO CHECKSHEET TONG HOP THEO THANG (${selectedMonth})`,
       14,
-      15
+      15,
     );
     if (approvers.length > 0) {
       doc.text(`Nguoi phe duyet: ${approvers.join(", ")}`, 14, 23);
@@ -359,19 +359,20 @@ const Report = () => {
   };
 
   return (
-    <Box sx={{ padding: 3, fontFamily: "Segoe UI, sans-serif" }}>
+    <Box sx={{ fontFamily: "Segoe UI, sans-serif" }}>
       <Typography
         variant="h5"
         component="h2"
         sx={{
           fontWeight: "bold",
           color: "#1e293b",
-          borderBottom: "2px solid #e2e8f0",
-          pb: 1.5,
-          mb: 3,
+          pb: { xs: 1, sm: 1.5 },
+          mb: { xs: 1, sm: 1 },
+          fontSize: { xs: "1.15rem", sm: "1.5rem" },
+          lineHeight: 1.4,
         }}
       >
-        {t(`report.title`)}
+        {t("report.title")}
       </Typography>
 
       <ReportSearch

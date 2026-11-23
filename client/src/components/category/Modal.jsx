@@ -13,6 +13,8 @@ import {
   Button,
 } from "@mui/material";
 
+import { useTranslation } from "react-i18next";
+
 export default function ItemModal({
   open,
   isEditing,
@@ -21,6 +23,7 @@ export default function ItemModal({
   onClose,
   onSave,
 }) {
+  const { t } = useTranslation();
   return (
     <Dialog
       open={open}
@@ -30,12 +33,12 @@ export default function ItemModal({
       PaperProps={{ sx: { borderRadius: "10px", p: 1 } }}
     >
       <DialogTitle sx={{ fontWeight: "700", color: "#1e293b", pb: 1 }}>
-        {isEditing ? "Sửa Hạng Mục Checksheet" : "Thêm Hạng Mục Mới"}
+        {isEditing ? t("categoryPage.edit") : t("categoryPage.addCategory")}
       </DialogTitle>
       <DialogContent dividers sx={{ borderColor: "#f1f5f9" }}>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
           <TextField
-            label="Thứ tự hiển thị (display_order)"
+            label={t("categoryPage.displayOrder")}
             type="number"
             size="small"
             value={formData.display_order}
@@ -45,7 +48,7 @@ export default function ItemModal({
             fullWidth
           />
           <TextField
-            label="Tên hạng mục (item_name)"
+            label={t("categoryPage.name")}
             size="small"
             value={formData.item_name}
             onChange={(e) =>
@@ -54,13 +57,11 @@ export default function ItemModal({
             fullWidth
           />
           <FormControl fullWidth size="small">
-            <InputLabel id="modal-item-type-label">
-              Loại kiểm tra
-            </InputLabel>
+            <InputLabel id="modal-item-type-label">{t("categoryPage.type")}</InputLabel>
             <Select
               labelId="modal-item-type-label"
               value={formData.item_type}
-              label="Loại kiểm tra (item_type)"
+              label={t("categoryPage.type")}
               onChange={(e) =>
                 setFormData({ ...formData, item_type: e.target.value })
               }
@@ -72,7 +73,7 @@ export default function ItemModal({
           </FormControl>
 
           <TextField
-            label="Mô tả Tiêu chuẩn (standard_value)"
+            label={t("categoryPage.standard")}
             size="small"
             value={formData.standard_value}
             onChange={(e) =>
